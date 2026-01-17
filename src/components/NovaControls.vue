@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from "vue";
 import { useFractalStore } from "../store/fractalStore";
 import SlidableValue from "./SlidableValue.vue";
 import PaletteSelector from "./PaletteSelector.vue";
+import Randomizer from "./Randomizer.vue";
 
 const store = useFractalStore();
 
@@ -34,50 +34,52 @@ const getVarColor = (varName: string): string => {
       <div id="formula-display">
         z<sub>n+1</sub> = z<sub>n</sub> -
         <SlidableValue
-          v-model="store.params.relaxation"
+          v-model="store.sliderParams.relaxation"
           varName="relaxation"
           color="#ff55ff"
           :step="0.005"
         />
         &times; (z<sup
           ><SlidableValue
-            v-model="store.params.powerMain"
+            v-model="store.sliderParams.powerMain"
             varName="powerMain"
             color="#ffaa00"
             :step="0.01"
         /></sup>
         -
         <SlidableValue
-          v-model="store.params.subtrahend"
+          v-model="store.sliderParams.subtrahend"
           varName="subtrahend"
           :step="0.01"
           color="#ffffff"
         />) / z<sup
           ><SlidableValue
-            v-model="store.params.powerDerivative"
+            v-model="store.sliderParams.powerDerivative"
             varName="powerDerivative"
             color="#00ffaa"
             :step="0.01"
         /></sup>
-        <span>Iterations: </span>
-        <SlidableValue
-          v-model="store.params.maxIterations"
-          varName="maxIterations"
-          :step="1"
-          color="#ffffff"
-        />
+        <div>
+          Iterations:
+          <SlidableValue
+            v-model="store.sliderParams.maxIterations"
+            varName="maxIterations"
+            :step="1"
+            color="#ffffff"
+          />
+        </div>
       </div>
 
       <div>
         <span>Seed: </span>
         <SlidableValue
-          v-model="store.params.seedX"
+          v-model="store.sliderParams.seedX"
           varName="seedX"
           color="#ff00aa"
         />
         <span> + </span>
         <SlidableValue
-          v-model="store.params.seedY"
+          v-model="store.sliderParams.seedY"
           varName="seedY"
           color="#ff00aa"
         />
@@ -87,13 +89,13 @@ const getVarColor = (varName: string): string => {
       <div>
         <span>Power I: </span>
         <SlidableValue
-          v-model="store.params.powerMainImaginary"
+          v-model="store.sliderParams.powerMainImaginary"
           varName="powerMainImaginary"
           color="#ff00aa"
         />
         <span> + </span>
         <SlidableValue
-          v-model="store.params.powerDerivativeImaginary"
+          v-model="store.sliderParams.powerDerivativeImaginary"
           varName="powerDerivativeImaginary"
           color="#ff00aa"
         />
@@ -103,13 +105,13 @@ const getVarColor = (varName: string): string => {
       <div>
         <span>Memory </span>
         <SlidableValue
-          v-model="store.params.memoryR"
+          v-model="store.sliderParams.memoryR"
           varName="memoryR"
           color="#ff00aa"
         />
         <span> + </span>
         <SlidableValue
-          v-model="store.params.memoryI"
+          v-model="store.sliderParams.memoryI"
           varName="memoryI"
           color="#ff00aa"
         />
@@ -119,7 +121,7 @@ const getVarColor = (varName: string): string => {
       <div>
         <span>Julia morph</span>
         <SlidableValue
-          v-model="store.params.juliaMorph"
+          v-model="store.sliderParams.juliaMorph"
           varName="juliaMorph"
           color="#ff00aa"
           :step="0.01"
@@ -185,6 +187,7 @@ const getVarColor = (varName: string): string => {
       <button @click="store.resetView" class="reset-btn" title="Reset View">
         ⟲
       </button>
+      <Randomizer />
     </div>
   </Transition>
 </template>
@@ -210,7 +213,7 @@ const getVarColor = (varName: string): string => {
   padding: 20px;
   border-radius: 12px;
   color: white;
-  width: 340px;
+  width: 370px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(8px);
 }

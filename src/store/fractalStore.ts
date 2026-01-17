@@ -6,6 +6,21 @@ interface ParamConfig {
   max?: number;
 }
 
+export interface FractalParams {
+  relaxation: number;
+  powerMain: number;
+  powerMainImaginary: number;
+  powerDerivative: number;
+  powerDerivativeImaginary: number;
+  subtrahend: number;
+  maxIterations: number;
+  memoryR: number;
+  memoryI: number;
+  seedX: number;
+  seedY: number;
+  juliaMorph: number;
+}
+
 export const palettes = [
   {
     id: 0,
@@ -65,24 +80,28 @@ export const palettes = [
   },
 ];
 
+const initialParams: FractalParams = {
+  relaxation: 0.3,
+  powerMain: 3.0,
+  powerMainImaginary: 0.0,
+  powerDerivative: 2.0,
+  powerDerivativeImaginary: 0.0,
+  subtrahend: 1.0,
+  maxIterations: 80,
+  memoryR: 0.0,
+  memoryI: 0.0,
+  // seedX: 1.0,
+  seedX: 0.0,
+  seedY: 0.0,
+  juliaMorph: 0.0,
+};
+
 export const useFractalStore = defineStore("fractal", {
   state: () => ({
     zoom: 2.0,
-    params: {
-      relaxation: 0.3,
-      powerMain: 3.0,
-      powerMainImaginary: 0.0,
-      powerDerivative: 2.0,
-      powerDerivativeImaginary: 0.0,
-      subtrahend: 1.0,
-      maxIterations: 80,
-      memoryR: 0.0,
-      memoryI: 0.0,
-      // seedX: 1.0,
-      seedX: 0.0,
-      seedY: 0.0,
-      juliaMorph: 0.0,
-    },
+    initialParams: { ...initialParams },
+    sliderParams: { ...initialParams },
+    liveParams: { ...initialParams },
     paramConfigs: {
       relaxation: { min: -2.0, max: 2.0 },
       powerMain: { min: -10.0, max: 10.0 },
@@ -92,7 +111,6 @@ export const useFractalStore = defineStore("fractal", {
     // isJulia: false,
     offsetShiftX: 0.0,
     offsetShiftY: 0.0,
-    liveParams: {} as Record<string, number>,
     time: 0,
     mouseX: 0, // The "Target" (where the mouse actually is)
     mouseY: 0,
@@ -130,7 +148,7 @@ export const useFractalStore = defineStore("fractal", {
     toggleTargetAxis(axis: "x" | "y") {
       this.activeTargetAxis = this.activeTargetAxis === axis ? null : axis;
     },
-    bindVariable(varName: string) {
+    bindVariable(varName: keyof FractalParams) {
       if (!this.activeTargetAxis) return;
 
       this.bindingsX = this.bindingsX.filter((v) => v !== varName);
@@ -173,6 +191,39 @@ export const useFractalStore = defineStore("fractal", {
         offsetShiftY: this.offsetShiftY + dy,
         duration: 0.4,
         ease: "power2.out",
+      });
+    },
+    // inside your useFractalStore actions:
+    randomizeParams() {
+      const targetValues: Record<string, number> = {};
+      const keys = Object.keys(this.sliderParams) as Array<keyof FractalParams>;
+
+      keys.forEach((key) => {
+        // 1. Calculate the new random target
+        const currentVal = this.initialParams[key];
+        const offset = Math.random() / 2 - 0.25;
+        let targetVal = currentVal + offset;
+
+        // 2. Clamp based on config
+        const config = this.paramConfigs[key];
+        if (config) {
+          if (config.min !== undefined)
+            targetVal = Math.max(config.min, targetVal);
+          if (config.max !== undefined)
+            targetVal = Math.min(config.max, targetVal);
+        }
+
+        // 3. Store the target in our temporary object
+        targetValues[key] = targetVal;
+      });
+
+      // 4. Animate the ENTIRE object in one go
+      // This avoids the overwrite conflict and is much better for performance
+      gsap.to(this.sliderParams, {
+        ...targetValues,
+        duration: 1.5,
+        ease: "expo.out",
+        overwrite: true, // Now this is safe because it's only one tween
       });
     },
   },

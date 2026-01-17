@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref, watch, computed } from "vue"; // Added computed
+import { ref, watch } from "vue"; // Added computed
 import gsap from "gsap";
-import { useFractalStore } from "../store/fractalStore";
+import { useFractalStore, type FractalParams } from "../store/fractalStore";
 
 const props = defineProps<{
-  modelValue: number;
+  modelValue: number; // This is the 'live' value from the parent
   step?: number;
-  varName: string;
+  varName: keyof FractalParams; // Use keyof for better TS support
   color?: string;
 }>();
 
@@ -14,15 +14,14 @@ const store = useFractalStore();
 const emit = defineEmits(["update:modelValue"]);
 const isDragging = ref(false);
 
-// 1. Grab config from store
-const config = computed(() => store.paramConfigs[props.varName] || {});
-
 const tweenTarget = { val: props.modelValue };
 
 watch(
   () => props.modelValue,
   (newVal) => {
-    if (!isDragging.value) tweenTarget.val = newVal;
+    if (!isDragging.value) {
+      tweenTarget.val = newVal;
+    }
   }
 );
 
@@ -35,6 +34,18 @@ const handleClick = (e: MouseEvent) => {
   } else {
     startDrag(e);
   }
+};
+
+const handleReset = (e: MouseEvent) => {
+  e.stopPropagation();
+  // Reset back to INITIAL, not current
+  const defaultValue = store.initialParams[props.varName];
+
+  gsap.to(tweenTarget, {
+    val: defaultValue,
+    duration: 0.5,
+    onUpdate: () => emit("update:modelValue", tweenTarget.val),
+  });
 };
 
 const startDrag = (e: MouseEvent) => {
@@ -52,19 +63,20 @@ const onDrag = (e: MouseEvent) => {
   const delta = (e.clientX - startX) * sensitivity;
   let targetVal = startValue + delta;
 
-  if (config.value.min !== undefined) {
-    targetVal = Math.max(config.value.min, targetVal);
-  }
-  if (config.value.max !== undefined) {
-    targetVal = Math.min(config.value.max, targetVal);
+  // Clamp values based on your config
+  const config = store.paramConfigs[props.varName as string];
+  if (config) {
+    if (config.min !== undefined) targetVal = Math.max(config.min, targetVal);
+    if (config.max !== undefined) targetVal = Math.min(config.max, targetVal);
   }
 
+  // Smoothly update the value
   gsap.to(tweenTarget, {
     val: targetVal,
-    duration: 0.25,
-    ease: "power2.out",
+    duration: 0.1, // Short duration for responsive feel
     overwrite: true,
     onUpdate: () => {
+      // THIS updates the store via v-model
       emit("update:modelValue", tweenTarget.val);
     },
   });
@@ -87,8 +99,9 @@ const stopDrag = () => {
     }"
     :style="{ color: color || '#646cff' }"
     @mousedown="handleClick"
+    @dblclick="handleReset"
   >
-    {{ (store.liveParams[varName] ?? modelValue).toFixed(2) }}
+    {{ store.liveParams[varName].toFixed(2) }}
   </span>
 </template>
 

@@ -4,6 +4,7 @@ import glsl from "vite-plugin-glsl";
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: "/fractals2/",
   plugins: [
     vue(),
     glsl(), // This is the "magic" for our shaders

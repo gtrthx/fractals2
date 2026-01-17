@@ -58,7 +58,7 @@ export function useMouseInteraction(canvasRef: {
       e.preventDefault();
       store.togglePause();
     }
-    if (e.code === "KeyR") {
+    if (e.code === "KeyW") {
       e.preventDefault();
       store.resetView();
     }
@@ -72,6 +72,10 @@ export function useMouseInteraction(canvasRef: {
 
     if (e.code === "KeyE") {
       store.nextPalette();
+    }
+
+    if (e.code === "KeyR") {
+      store.randomizeParams();
     }
   };
 

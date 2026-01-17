@@ -1,5 +1,9 @@
 import { onMounted, onUnmounted, type Ref } from "vue";
-import { palettes, useFractalStore } from "../store/fractalStore";
+import {
+  palettes,
+  useFractalStore,
+  type FractalParams,
+} from "../store/fractalStore";
 import vertSource from "../shaders/base.vert";
 import fragSource from "../shaders/nova.frag";
 
@@ -121,11 +125,12 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
       return val;
     };
 
-    const varKeys = Object.keys(store.params);
+    const varKeys = Object.keys(store.sliderParams) as Array<
+      keyof FractalParams
+    >;
 
     varKeys.forEach((key) => {
-      // @ts-ignore
-      const baseVal = store.params[key];
+      const baseVal = store.sliderParams[key];
       const liveVal = getModifiedValue(key, baseVal);
 
       if (store.isPaused) {
@@ -156,7 +161,7 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
     };
 
     const memLoc = gl.getUniformLocation(program, "memory");
-    gl.uniform2f(memLoc, store.params.memoryR, store.params.memoryI);
+    gl.uniform2f(memLoc, store.liveParams.memoryR, store.liveParams.memoryI);
 
     // 3. Update the GPU
     setVec3("brightness", palette.brightness);
