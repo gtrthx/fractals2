@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import { useFractalStore } from "../../store/fractalStore";
 import SlidableValue from "./../SlidableValue.vue";
-import type { NovaParams } from "../../types/nova-params";
+import type { NovaParams } from "../../types/fractals/nova-params";
 
 const store = useFractalStore();
 

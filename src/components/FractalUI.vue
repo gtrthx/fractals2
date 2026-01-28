@@ -7,15 +7,22 @@ import { computed } from "vue";
 import NovaControls from "./fractal-controls/NovaControls.vue";
 import BurningShipControls from "./fractal-controls/BurningShipControls.vue";
 import MandelbrotControls from "./fractal-controls/MandelbrotControls.vue";
+import PresetGallery from "./PresetGallery.vue";
+import NewtonControls from "./fractal-controls/NewtonControls.vue";
 
 const store = useFractalStore();
 
 const currentControlsComponent = computed(() => {
-  return store.currentFractal === "nova"
-    ? NovaControls
-    : store.currentFractal === "mandelbrot"
-    ? MandelbrotControls
-    : BurningShipControls;
+  switch (store.currentFractal) {
+    case "mandelbrot":
+      return MandelbrotControls;
+    case "nova":
+      return NovaControls;
+    case "newton":
+      return NewtonControls;
+    case "burningShip":
+      return BurningShipControls;
+  }
 });
 </script>
 
@@ -31,6 +38,7 @@ const currentControlsComponent = computed(() => {
           <option value="nova">Nova</option>
           <option value="mandelbrot">Mandelbrot</option>
           <option value="burningShip">Burning Ship</option>
+          <option value="newton">Newton</option>
         </select>
         <button class="close-ui-btn" @click="store.toggleUi()">
           <span class="icon">◀</span>
@@ -47,6 +55,7 @@ const currentControlsComponent = computed(() => {
           <button @click="store.resetView" class="reset-btn">⟲</button>
           <Randomizer />
         </div>
+        <PresetGallery />
       </div>
     </div>
   </Transition>

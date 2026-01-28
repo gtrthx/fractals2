@@ -1,6 +1,7 @@
 import type { FractalParams } from "../types/fractal-params";
-import type { MandelbrotParams } from "../types/mandelbrot-params";
-import type { NovaParams } from "../types/nova-params";
+import type { MandelbrotParams } from "../types/fractals/mandelbrot-params";
+import type { NewtonParams } from "../types/fractals/newton-params";
+import type { NovaParams } from "../types/fractals/nova-params";
 
 export const FRACTAL_DEFAULTS: Record<string, FractalParams> = {
   nova: {
@@ -39,4 +40,16 @@ export const FRACTAL_DEFAULTS: Record<string, FractalParams> = {
     memoryI: 0.0,
     subtrahend: 0.0,
   },
+  newton: {
+    seedX: 0.0,
+    seedY: 0.0,
+    power: 3.0,
+    powerImaginary: 0.0,
+    dampingR: 1.0,
+    dampingI: 0.0,
+    memoryR: 0.0,
+    memoryI: 0.0,
+    maxIterations: 60,
+    juliaMorph: 0.0,
+  } as NewtonParams,
 };

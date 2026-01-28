@@ -100,6 +100,11 @@ export function useMouseInteraction(canvasRef: {
       store.currentFractal = "burningShip";
       store.switchFractal();
     }
+
+    if (e.code === "Digit4") {
+      store.currentFractal = "newton";
+      store.switchFractal();
+    }
   };
 
   const handleWheel = (e: WheelEvent) => {

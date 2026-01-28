@@ -5,6 +5,7 @@ import type { ParamRange } from "../types/param-range";
 import { FRACTAL_DEFAULTS } from "../constants/fractal-defaults";
 import type { FractalParams } from "../types/fractal-params";
 import type { FractalType } from "../types/fractal-type";
+import type { FractalState } from "../types/fractal-state";
 
 export const useFractalStore = defineStore("fractal", {
   state: () => ({
@@ -17,7 +18,7 @@ export const useFractalStore = defineStore("fractal", {
       relaxation: { min: -2.0, max: 2.0 },
       powerMain: { min: -10.0, max: 10.0 },
       maxIterations: { min: 1, max: 200 },
-      juliaMorph: { min: -1.0, max: 3.0 },
+      juliaMorph: { min: 0.0, max: 1.0 },
     } as Record<string, ParamRange>,
     offsetShiftX: 0.0,
     offsetShiftY: 0.0,
@@ -29,7 +30,7 @@ export const useFractalStore = defineStore("fractal", {
     activeTargetAxis: null as "x" | "y" | null,
     bindingsX: ["seedX"] as string[],
     bindingsY: ["seedY"] as string[],
-    selectedPalette: 0,
+    selectedPalette: palettes[0],
     isPaused: false,
     frozenValues: {} as Record<string, number>,
     isUiVisible: true,
@@ -48,15 +49,16 @@ export const useFractalStore = defineStore("fractal", {
       });
     },
     setPalette(id: number) {
-      this.selectedPalette = id;
+      this.selectedPalette = palettes[id];
     },
     nextPalette() {
       const len = palettes.length;
-      this.selectedPalette = (this.selectedPalette + 1) % len;
+      this.selectedPalette = palettes[(this.selectedPalette.id + 1) % len];
     },
     prevPalette() {
       const len = palettes.length;
-      this.selectedPalette = (this.selectedPalette - 1 + len) % len;
+      this.selectedPalette =
+        palettes[(this.selectedPalette.id - 1 + len) % len];
     },
     togglePause() {
       this.isPaused = !this.isPaused;
@@ -64,7 +66,7 @@ export const useFractalStore = defineStore("fractal", {
     toggleUi() {
       this.isUiVisible = !this.isUiVisible;
       if (!this.isUiVisible) {
-        this.activeTargetAxis = null; // Clean up selection mode when hiding UI
+        this.activeTargetAxis = null;
       }
     },
     toggleTargetAxis(axis: "x" | "y") {
@@ -142,6 +144,37 @@ export const useFractalStore = defineStore("fractal", {
         ease: "expo.out",
         overwrite: true,
       });
+    },
+
+    getCurrentState(): FractalState {
+      return {
+        type: this.currentFractal,
+        zoom: this.zoom,
+        offsetX: this.offsetShiftX,
+        offsetY: this.offsetShiftY,
+        params: JSON.parse(JSON.stringify(this.sliderParams)),
+        palette: {
+          brightness: [...this.selectedPalette.brightness],
+          contrast: [...this.selectedPalette.contrast],
+          osc: [...this.selectedPalette.osc],
+          phase: [...this.selectedPalette.phase],
+        },
+      };
+    },
+
+    loadState(state: FractalState) {
+      this.currentFractal = state.type;
+
+      this.zoom = state.zoom;
+      this.offsetShiftX = state.offsetX;
+      this.offsetShiftY = state.offsetY;
+
+      Object.assign(this.sliderParams, state.params);
+
+      this.selectedPalette.brightness = [...state.palette.brightness];
+      this.selectedPalette.contrast = [...state.palette.contrast];
+      this.selectedPalette.osc = [...state.palette.osc];
+      this.selectedPalette.phase = [...state.palette.phase];
     },
   },
 });

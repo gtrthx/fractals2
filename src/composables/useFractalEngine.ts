@@ -4,7 +4,7 @@ import vertSource from "../shaders/base.vert";
 import novaFrag from "../shaders/nova.frag";
 import mandelFrag from "../shaders/mandelbrot.frag";
 import burningShipFrag from "../shaders/burningShip.frag";
-import { palettes } from "../constants/palettes";
+import newtonFrag from "../shaders/newton.frag";
 
 export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
   const store = useFractalStore();
@@ -36,6 +36,8 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
     "powerDerivativeImaginary",
     "memoryR",
     "memoryI",
+    "dampingR",
+    "dampingI",
     "seedX",
     "seedY",
     "juliaMorph",
@@ -63,16 +65,16 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
   const switchProgram = (type: string) => {
     switch (type) {
       case "mandelbrot":
-        // @ts-ignore
         activeProgram = programs.mandelbrot;
         break;
       case "nova":
-        // @ts-ignore
         activeProgram = programs.nova;
+        break;
+      case "newton":
+        activeProgram = programs.newton;
         break;
       case "burningShip":
       default:
-        // @ts-ignore
         activeProgram = programs.burningShip;
         break;
     }
@@ -91,13 +93,14 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
     programs.nova = createProgram(novaFrag);
     programs.mandelbrot = createProgram(mandelFrag);
     programs.burningShip = createProgram(burningShipFrag);
+    programs.newton = createProgram(newtonFrag);
 
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(
       gl.ARRAY_BUFFER,
       new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]),
-      gl.STATIC_DRAW
+      gl.STATIC_DRAW,
     );
 
     switchProgram(store.currentFractal);
@@ -109,7 +112,7 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
     () => store.currentFractal,
     (newType) => {
       switchProgram(newType);
-    }
+    },
   );
 
   const render = () => {
@@ -132,16 +135,15 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
     gl.uniform1f(uniformLocations.offsetShiftY, store.offsetShiftY);
     gl.uniform1f(
       uniformLocations.maxIterations,
-      store.sliderParams.maxIterations
+      store.sliderParams.maxIterations,
     );
     gl.uniform1f(uniformLocations.time, performance.now() / 1000);
 
     const keys = Object.keys(store.sliderParams);
     keys.forEach((key) => {
       const loc = uniformLocations[key];
-      if (!loc) return; // Skip if this uniform isn't in the current shader
+      if (!loc) return;
 
-      // Logic for smoothing/bindings
       const baseVal = (store.sliderParams as any)[key];
       const sens = key.includes("power") ? 0.3 : 1.0;
       let liveVal = baseVal;
@@ -160,7 +162,7 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
       }
     });
 
-    const palette = palettes[store.selectedPalette];
+    const palette = store.selectedPalette;
     const setVec3 = (name: string, val: number[]) => {
       gl.uniform3fv(uniformLocations[name], new Float32Array(val));
     };

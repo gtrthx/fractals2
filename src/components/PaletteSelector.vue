@@ -19,7 +19,7 @@ const selectPalette = (id: number) => {
       <div
         class="preview-bar"
         :style="{
-          background: getPaletteCSS(palettes[store.selectedPalette]),
+          background: getPaletteCSS(store.selectedPalette),
         }"
       ></div>
       <span class="arrow">{{ isOpen ? "▲" : "▼" }}</span>
@@ -32,13 +32,13 @@ const selectPalette = (id: number) => {
             v-for="p in palettes"
             :key="p.id"
             class="palette-brick"
-            :class="{ active: store.selectedPalette === p.id }"
+            :class="{ active: store.selectedPalette.id === p.id }"
             :style="{
               background: getPaletteCSS(p),
             }"
             @click="selectPalette(p.id)"
           >
-            <div v-if="store.selectedPalette === p.id" class="check">✓</div>
+            <div v-if="store.selectedPalette.id === p.id" class="check">✓</div>
           </div>
         </div>
       </div>

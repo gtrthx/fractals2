@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import { useFractalStore } from "../../store/fractalStore";
 import SlidableValue from "./../SlidableValue.vue";
-import type { MandelbrotParams } from "../../types/mandelbrot-params";
+import type { MandelbrotParams } from "../../types/fractals/mandelbrot-params";
 
 const store = useFractalStore();
 const params = computed(() => store.sliderParams as MandelbrotParams);

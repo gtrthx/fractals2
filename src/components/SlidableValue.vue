@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onUnmounted, ref, watch } from "vue"; // Added computed
+import { computed, onUnmounted, ref, watch } from "vue";
 import gsap from "gsap";
 import { useFractalStore } from "../store/fractalStore";
 import type { FractalParams } from "../types/fractal-params";
@@ -75,13 +75,11 @@ const onDrag = (e: MouseEvent) => {
     if (config.max !== undefined) targetVal = Math.min(config.max, targetVal);
   }
 
-  // Smoothly update the value
   gsap.to(tweenTarget, {
     val: targetVal,
-    duration: 0.1, // Short duration for responsive feel
+    duration: 0.1,
     overwrite: true,
     onUpdate: () => {
-      // THIS updates the store via v-model
       emit("update:modelValue", tweenTarget.val);
     },
   });
@@ -96,7 +94,6 @@ const stopDrag = () => {
 
 onUnmounted(() => {
   gsap.killTweensOf(tweenTarget);
-  // Remove listeners just in case a drag was interrupted by a fractal switch
   document.removeEventListener("mousemove", onDrag);
   document.removeEventListener("mouseup", stopDrag);
 });
