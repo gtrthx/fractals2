@@ -11,7 +11,7 @@ vec2 complexMul(vec2 a, vec2 b) {
   return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
 }
 
-vec2 complexDivide(vec2 a, vec2 b) {
+vec2 complexDiv(vec2 a, vec2 b) {
   float den = dot(b, b) + 1e-10;
   return vec2(dot(a, b), a.y * b.x - a.x * b.y) / den;
 }
@@ -37,7 +37,7 @@ vec2 complexCos(vec2 z) {
 
 vec2 complexTan(vec2 z) {
   // tan(z) = sin(z)/cos(z)
-  return complexDivide(complexSin(z), complexCos(z));
+  return complexDiv(complexSin(z), complexCos(z));
 }
 
 // --- Logarithm & Exponential ---

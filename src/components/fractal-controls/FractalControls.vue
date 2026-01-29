@@ -14,17 +14,26 @@ const colors = {
   iter: "#ffffff",
 };
 
-const zStyle = computed(() => ({
-  color: colors.seed,
-  opacity: 0.3 + store.sliderParams.juliaMorph * 0.7,
-  transition: "opacity 0.3s ease",
-}));
+const zStyle = computed(() => {
+  // z is the "Seed" in Mandelbrot (morph=0), "Coordinate" in Julia (morph=1)
+  // We want it to be Blue when it represents the Coordinate.
+  const ratio = store.sliderParams.juliaMorph;
+  return {
+    color: ratio > 0.5 ? colors.seed : "#ffffff",
+    opacity: ratio > 0.5 ? 1.0 : 0.6, // Slight dimming instead of 0.3
+    transition: "color 0.4s ease, opacity 0.4s ease",
+  };
+});
 
-const cStyle = computed(() => ({
-  color: colors.seed,
-  opacity: 1.0 - store.sliderParams.juliaMorph * 0.7,
-  transition: "opacity 0.3s ease",
-}));
+const cStyle = computed(() => {
+  // c is the "Coordinate" in Mandelbrot (morph=0), "Seed" in Julia (morph=1)
+  const ratio = store.sliderParams.juliaMorph;
+  return {
+    color: ratio < 0.5 ? colors.seed : "#ffffff",
+    opacity: ratio < 0.5 ? 1.0 : 0.6,
+    transition: "color 0.4s ease, opacity 0.4s ease",
+  };
+});
 </script>
 
 <template>
@@ -68,6 +77,52 @@ const cStyle = computed(() => ({
         ((<span :style="zStyle">z</span>² + <span :style="cStyle">c</span> - 1)
         / (2<span :style="zStyle">z</span> + <span :style="cStyle">c</span> -
         2))<sup :style="{ color: colors.power }">P</sup>
+      </template>
+
+      <template v-else-if="store.currentFormulaId === 'inv-mandel'">
+        <span :style="zStyle">z</span
+        ><sup :style="{ color: colors.power }">P</sup> + 1/<span :style="cStyle"
+          >c</span
+        >
+      </template>
+
+      <template v-else-if="store.currentFormulaId === 'inv-exp'">
+        1/<span :style="zStyle">z</span
+        ><sup :style="{ color: colors.power }">P</sup> +
+        <span :style="cStyle">c</span>
+      </template>
+
+      <template v-else-if="store.currentFormulaId === 'lambda'">
+        <span :style="cStyle">c</span> · <span :style="zStyle">z</span>(1 -
+        <span :style="zStyle">z</span>)
+      </template>
+
+      <template v-else-if="store.currentFormulaId === 'spider'">
+        <div
+          style="
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+          "
+        >
+          <div>
+            <span :style="zStyle">z</span
+            ><sup :style="{ color: colors.power }">P</sup> +
+            <span :style="cStyle">c</span>
+          </div>
+          <div style="font-size: 0.6em; opacity: 0.6">
+            <span :style="cStyle">c</span> → <span :style="cStyle">c</span>/2 +
+            <span :style="zStyle">z</span>
+          </div>
+        </div>
+      </template>
+
+      <template v-else-if="store.currentFormulaId === 'heart'">
+        (|Re(<span :style="zStyle">z</span>)| + iIm(<span :style="zStyle"
+          >z</span
+        >))<sup :style="{ color: colors.power }">P</sup> +
+        <span :style="cStyle">c</span>
       </template>
     </div>
 

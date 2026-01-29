@@ -39,7 +39,6 @@ export const useFractalStore = defineStore("fractal", {
   getters: {
     currentFormula: (state) =>
       FORMULAS.find((f) => f.id === state.currentFormulaId) || FORMULAS[0],
-    // currentEngine: (getters) => getters.currentFormula.engine,
   },
   actions: {
     switchFractalType(fractalType?: FractalType) {
@@ -53,6 +52,7 @@ export const useFractalStore = defineStore("fractal", {
         this.setFormula(firstFormula.id);
       }
     },
+
     setFormula(id: string) {
       const formula = FORMULAS.find((f) => f.id === id);
       if (!formula) return;
@@ -76,6 +76,22 @@ export const useFractalStore = defineStore("fractal", {
       if (offsetShiftY !== undefined) this.offsetShiftY = offsetShiftY;
 
       this.frozenValues = {};
+    },
+
+    nextFormula() {
+      const currentIndex = FORMULAS.findIndex(
+        (f) => f.id === this.currentFormulaId,
+      );
+      const nextIndex = (currentIndex + 1) % FORMULAS.length;
+      this.setFormula(FORMULAS[nextIndex].id);
+    },
+
+    prevFormula() {
+      const currentIndex = FORMULAS.findIndex(
+        (f) => f.id === this.currentFormulaId,
+      );
+      const prevIndex = (currentIndex - 1 + FORMULAS.length) % FORMULAS.length;
+      this.setFormula(FORMULAS[prevIndex].id);
     },
 
     togglePause() {

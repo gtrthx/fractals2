@@ -4,6 +4,11 @@ import shipRaw from "../shaders/escape/burning_ship.frag?raw";
 import tricornRaw from "../shaders/escape/tricorn.frag?raw";
 import buffaloRaw from "../shaders/escape/buffalo.frag?raw";
 import celticRaw from "../shaders/escape/celtic.frag?raw";
+import invExpRaw from "../shaders/escape/inv_exp.frag?raw";
+import invMandelRaw from "../shaders/escape/inv_mandel.frag?raw";
+import spiderRaw from "../shaders/escape/spider.frag?raw";
+import heartRaw from "../shaders/escape/heart.frag?raw";
+import lambdaRaw from "../shaders/escape/lambda.frag?raw";
 import type { FormulaDefinition } from "../types/formula-definition";
 
 export const FORMULAS: FormulaDefinition[] = [
@@ -54,5 +59,45 @@ export const FORMULAS: FormulaDefinition[] = [
     mathSymbol: "|Re(z²)| + iIm(z²) + c",
     shaderSource: celticRaw,
     defaults: { zoom: 2.5, offsetShiftX: -0.2, offsetShiftY: 0.0, power: 2.0 },
+  },
+  {
+    id: "inv-mandel",
+    name: "Inverted Mandelbrot",
+    fractalType: "escape",
+    mathSymbol: "z² + 1/c",
+    shaderSource: invMandelRaw,
+    defaults: { zoom: 0.8, offsetShiftX: 0.0, power: 2.0 },
+  },
+  {
+    id: "inv-exp",
+    name: "Inverted Exponent",
+    fractalType: "escape",
+    mathSymbol: "1/z² + c",
+    shaderSource: invExpRaw,
+    defaults: { zoom: 2.5, offsetShiftX: 0.0, power: 2.0 },
+  },
+  {
+    id: "lambda",
+    name: "Lambda",
+    fractalType: "escape",
+    mathSymbol: "c · z(1-z)",
+    shaderSource: lambdaRaw,
+    defaults: { zoom: 1.5, offsetShiftX: 0.5, power: 1.0 },
+  },
+  {
+    id: "spider",
+    name: "Spider",
+    fractalType: "escape",
+    mathSymbol: "zₙ₊₁ = zₙ² + cₙ, cₙ₊₁ = cₙ/2 + zₙ",
+    shaderSource: spiderRaw,
+    defaults: { zoom: 2.5, offsetShiftX: 0.0, power: 2.0, memoryR: 0.5 },
+  },
+  {
+    id: "heart",
+    name: "Heart",
+    fractalType: "escape",
+    mathSymbol: "(|Re(z)| + iIm(z))² + c",
+    shaderSource: heartRaw,
+    defaults: { zoom: 2.5, offsetShiftX: 0.0, power: 2.0 },
   },
 ];

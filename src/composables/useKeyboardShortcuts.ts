@@ -31,6 +31,8 @@ export function useKeyboardShortcuts() {
     Digit1: () => fractalStore.switchFractalType("escape"),
     Digit2: () => fractalStore.switchFractalType("newton"),
     Digit3: () => fractalStore.switchFractalType("nova"),
+    ArrowRight: () => fractalStore.nextFormula(),
+    ArrowLeft: () => fractalStore.prevFormula(),
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {

@@ -64,7 +64,7 @@ vec3 get_newton_color(vec2 uv) {
     vec2 fPrimeZ = complexMul(p, complexPower(currentZ, pMinusOne));
 
     // Standard Newton Step
-    vec2 step = complexDivide(fz, fPrimeZ + vec2(eps));
+    vec2 step = complexDiv(fz, fPrimeZ + vec2(eps));
 
     // Apply Damping and Update
     currentZ -= complexMul(d, step);

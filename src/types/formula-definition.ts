@@ -13,5 +13,6 @@ export interface FormulaDefinition {
     power?: number;
     subtrahend?: number;
     juliaMorph?: number;
+    memoryR?: number;
   };
 }

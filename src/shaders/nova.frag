@@ -55,7 +55,7 @@ vec3 get_nova_color(vec2 uv) {
       currentZ,
       vec2(powerSecondary, powerSecondaryI)
     );
-    vec2 newtonStep = complexDivide(functionValue, derivativeValue);
+    vec2 newtonStep = complexDiv(functionValue, derivativeValue);
 
     vec2 memoryEffect = complexMul(vec2(memoryR, memoryI), previousZ);
     currentZ =
