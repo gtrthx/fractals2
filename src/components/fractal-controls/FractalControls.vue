@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useFractalStore } from "../../store/useFractalStore";
+import { useInputStore } from "../../store/useInputStore";
 import { useFractalTheme } from "../../composables/useFractalTheme";
 import BaseSlider from "./BaseSlider.vue";
+import FormulaDisplay from "./FormulaDisplay.vue";
 
 import { BASE_CONTROL_GROUPS } from "../../constants/ui/base-control-groups";
 import { FORMULAS } from "../../constants/formulas";
@@ -10,8 +12,12 @@ import { DEFAULT_SLIDER_CONSTRAINTS } from "../../constants/ui/default-slider-pa
 import type { ControlGroup, SliderSchema } from "../../types/ui";
 
 const fractalStore = useFractalStore();
-const { colors, getColor, mathStyles } = useFractalTheme();
+const inputStore = useInputStore();
+const { getColor } = useFractalTheme();
 
+/**
+ * Determines which control groups to show based on the current formula.
+ */
 const activeControls = computed<ControlGroup[]>(() => {
   const formula = FORMULAS.find((f) => f.id === fractalStore.formulaId);
   if (!formula) return [];
@@ -28,146 +34,90 @@ const activeControls = computed<ControlGroup[]>(() => {
   return [...groups, iterationGroup];
 });
 
+/**
+ * Merges default constraints (min/max/step) with slider-specific overrides.
+ */
 const getSliderProps = (slider: SliderSchema) => ({
   ...DEFAULT_SLIDER_CONSTRAINTS[slider.paramKey],
   ...slider,
 });
+
+/**
+ * Binds the group to the mouse.
+ * If 1 slider: X-axis.
+ * If 2+ sliders: 1st to X, 2nd to Y.
+ */
+const handleGroupLabelClick = (group: ControlGroup) => {
+  const sliders = group.sliders;
+  if (!sliders.length) return;
+
+  if (sliders.length >= 2) {
+    inputStore.toggleGroupBinding({
+      x: sliders[0].paramKey,
+      y: sliders[1].paramKey,
+    });
+  } else {
+    inputStore.toggleGroupBinding({
+      x: sliders[0].paramKey,
+    });
+  }
+};
+
+/**
+ * Returns true if any slider in the group is currently controlled by the mouse.
+ */
+const isGroupBound = (group: ControlGroup) => {
+  return group.sliders.some((s) => inputStore.isParamBound(s.paramKey));
+};
 </script>
 
 <template>
   <div class="fractal-controls">
-    <div id="formula-display">
-      <template v-if="fractalStore.formulaId === 'mandelbrot'">
-        <span :style="mathStyles.zStyle">z</span>
-        <sup :style="{ color: colors.power }">P</sup> +
-        <span :style="mathStyles.cStyle">c</span>
-      </template>
+    <FormulaDisplay />
 
-      <template v-else-if="fractalStore.formulaId === 'burning-ship'">
-        (|Re(<span :style="mathStyles.zStyle">z</span>)| + i|Im(<span
-          :style="mathStyles.zStyle"
-          >z</span
-        >)|) <sup :style="{ color: colors.power }">P</sup> +
-        <span :style="mathStyles.cStyle">c</span>
-      </template>
-
-      <template v-else-if="fractalStore.formulaId === 'tricorn'">
-        <span :style="mathStyles.zStyle">z̅</span>
-        <sup :style="{ color: colors.power }">P</sup> +
-        <span :style="mathStyles.cStyle">c</span>
-      </template>
-
-      <template v-else-if="fractalStore.formulaId === 'buffalo'">
-        |<span :style="mathStyles.zStyle">z</span
-        ><sup :style="{ color: colors.power }">P</sup>| +
-        <span :style="mathStyles.cStyle">c</span>
-      </template>
-
-      <template v-else-if="fractalStore.formulaId === 'celtic'">
-        |Re(<span :style="mathStyles.zStyle">z</span
-        ><sup :style="{ color: colors.power }">P</sup>)| + iIm(<span
-          :style="mathStyles.zStyle"
-          >z</span
-        ><sup :style="{ color: colors.power }">P</sup>) +
-        <span :style="mathStyles.cStyle">c</span>
-      </template>
-
-      <template v-else-if="fractalStore.formulaId === 'magnet'">
-        ((<span :style="mathStyles.zStyle">z</span>² +
-        <span :style="mathStyles.cStyle">c</span> - 1) / (2<span
-          :style="mathStyles.zStyle"
-          >z</span
-        >
-        + <span :style="mathStyles.cStyle">c</span> - 2))
-        <sup :style="{ color: colors.power }">P</sup>
-      </template>
-
-      <template v-else-if="fractalStore.formulaId === 'inv-mandel'">
-        <span :style="mathStyles.zStyle">z</span
-        ><sup :style="{ color: colors.power }">P</sup> + 1/
-        <span :style="mathStyles.cStyle">c</span>
-      </template>
-
-      <template v-else-if="fractalStore.formulaId === 'inv-exp'">
-        1/<span :style="mathStyles.zStyle">z</span
-        ><sup :style="{ color: colors.power }">P</sup> +
-        <span :style="mathStyles.cStyle">c</span>
-      </template>
-
-      <template v-else-if="fractalStore.formulaId === 'lambda'">
-        <span :style="mathStyles.cStyle">c</span> ·
-        <span :style="mathStyles.zStyle">z</span>(1 -
-        <span :style="mathStyles.zStyle">z</span>)
-      </template>
-
-      <template v-else-if="fractalStore.formulaId === 'spider'">
-        <div class="spider-layout">
-          <div>
-            <span :style="mathStyles.zStyle">z</span
-            ><sup :style="{ color: colors.power }">P</sup> +
-            <span :style="mathStyles.cStyle">c</span>
-          </div>
-          <div class="sub-formula">
-            <span :style="mathStyles.cStyle">c</span> →
-            <span :style="mathStyles.cStyle">c</span>/2 +
-            <span :style="mathStyles.zStyle">z</span>
-          </div>
-        </div>
-      </template>
-
-      <template v-else-if="fractalStore.formulaId === 'heart'">
-        (|Re(<span :style="mathStyles.zStyle">z</span>)| + iIm(<span
-          :style="mathStyles.zStyle"
-          >z</span
-        >)) <sup :style="{ color: colors.power }">P</sup> +
-        <span :style="mathStyles.cStyle">c</span>
-      </template>
-
-      <template v-if="fractalStore.formulaId === 'newton-std'">
-        <span :style="mathStyles.zStyle">z</span
-        ><sup :style="{ color: colors.power }">P</sup> - 1 = 0
-      </template>
-
-      <template v-else-if="fractalStore.formulaId === 'newton-sin'">
-        <span :style="mathStyles.zStyle">z</span> -
-        <span :style="{ color: colors.power }">a</span> · tan(<span
-          :style="mathStyles.zStyle"
-          >z</span
-        >)
-      </template>
-    </div>
-  </div>
-
-  <div class="controls-wrapper">
-    <div
-      v-for="group in activeControls"
-      :key="group.label"
-      class="control-group"
-    >
-      <div class="label" :style="{ color: getColor(group.colorKey) }">
-        {{ group.label }}:
-      </div>
-
-      <template v-for="slider in group.sliders" :key="slider.paramKey">
-        <span
-          v-if="slider.showPlus"
+    <div class="controls-wrapper">
+      <div
+        v-for="group in activeControls"
+        :key="group.label"
+        class="control-group"
+        :class="{ 'group-active': isGroupBound(group) }"
+      >
+        <div
+          class="label clickable"
           :style="{ color: getColor(group.colorKey) }"
-          >+</span
+          @click="handleGroupLabelClick(group)"
         >
+          {{ group.label }}:
+          <span v-if="isGroupBound(group)" class="live-indicator">●</span>
+        </div>
 
-        <BaseSlider
-          v-model="fractalStore.params.slider[slider.paramKey]"
-          :paramKey="slider.paramKey"
-          :color="getColor(group.colorKey)"
-          :step="getSliderProps(slider).step"
-          :min="getSliderProps(slider).min"
-          :max="getSliderProps(slider).max"
-        />
+        <div class="slider-stack">
+          <template v-for="slider in group.sliders" :key="slider.paramKey">
+            <span
+              v-if="slider.showPlus"
+              :style="{ color: getColor(group.colorKey) }"
+              class="math-operator"
+              >+</span
+            >
 
-        <span v-if="slider.suffix" :style="{ color: getColor(group.colorKey) }">
-          {{ slider.suffix }}
-        </span>
-      </template>
+            <BaseSlider
+              v-model="fractalStore.params.slider[slider.paramKey]"
+              :paramKey="slider.paramKey"
+              :color="getColor(group.colorKey)"
+              :is-bound="!!inputStore.isParamBound(slider.paramKey)"
+              v-bind="getSliderProps(slider)"
+            />
+
+            <span
+              v-if="slider.suffix"
+              :style="{ color: getColor(group.colorKey) }"
+              class="slider-suffix"
+            >
+              {{ slider.suffix }}
+            </span>
+          </template>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -179,42 +129,31 @@ const getSliderProps = (slider: SliderSchema) => ({
   gap: 12px;
 }
 
-#formula-display {
-  background: rgba(0, 0, 0, 0.4);
-  padding: 20px;
-  text-align: center;
-  font-family: "Times New Roman", serif;
-  font-style: italic;
-  font-size: 24px;
-  border-radius: 8px;
-  margin-bottom: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  user-select: none;
-}
-
-.spider-layout {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.sub-formula {
-  font-size: 0.6em;
-  opacity: 0.6;
-}
-
 .controls-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .control-group {
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 30px;
+  min-height: 32px;
+  padding: 0 4px;
+  transition: background-color 0.2s ease;
+  border-radius: 4px;
+}
+
+.control-group.group-active {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.slider-stack {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
 }
 
 .label {
@@ -223,11 +162,54 @@ const getSliderProps = (slider: SliderSchema) => ({
   text-transform: uppercase;
   letter-spacing: 0.5px;
   opacity: 0.8;
+  user-select: none;
 }
 
-.divider {
-  border: 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  margin: 10px 0;
+.label.clickable {
+  cursor: pointer;
+  transition:
+    opacity 0.2s,
+    text-shadow 0.2s;
+}
+
+.label.clickable:hover {
+  opacity: 1;
+  text-shadow: 0 0 8px currentColor;
+}
+
+.live-indicator {
+  font-size: 8px;
+  margin-left: 4px;
+  display: inline-block;
+  vertical-align: middle;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+}
+
+.math-operator {
+  font-family: monospace;
+  font-weight: bold;
+}
+
+.slider-suffix {
+  font-size: 14px;
+  font-family: serif;
+  font-style: italic;
+  opacity: 0.9;
+  min-width: 10px;
 }
 </style>

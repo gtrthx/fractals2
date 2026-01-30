@@ -11,7 +11,6 @@ import heartRaw from "../shaders/formulas/escape/heart.frag?raw";
 import lambdaRaw from "../shaders/formulas/escape/lambda.frag?raw";
 import newtonStdRaw from "../shaders/formulas/newton/newton_std.frag?raw";
 import newtonSinRaw from "../shaders/formulas/newton/newton_sin.frag?raw";
-import { BASE_CONTROL_GROUPS } from "./ui/base-control-groups";
 import type { FormulaDefinition } from "../types/ui";
 
 export const FORMULAS: FormulaDefinition[] = [
@@ -21,14 +20,14 @@ export const FORMULAS: FormulaDefinition[] = [
     fractalType: "escape",
     displayString: "z² + c",
     shaderSource: mandelRaw,
-    customUI: [
-      ...BASE_CONTROL_GROUPS.escape,
-      {
-        label: "Julia Morph",
-        colorKey: "julia",
-        sliders: [{ paramKey: "juliaMorph", min: 0, max: 5 }],
-      },
-    ],
+    // customUI: [
+    //   ...BASE_CONTROL_GROUPS.escape,
+    //   {
+    //     label: "Julia Morph",
+    //     colorKey: "julia",
+    //     sliders: [{ paramKey: "juliaMorph", min: 0, max: 5 }],
+    //   },
+    // ],
     defaults: { zoom: 2.5, offsetShiftX: -0.3, power: 2.0 },
   },
   {
