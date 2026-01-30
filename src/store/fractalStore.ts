@@ -1,220 +1,92 @@
 import { defineStore } from "pinia";
 import gsap from "gsap";
 import { FORMULAS } from "../constants/formulas";
-import type { FractalType } from "../types/fractal-type";
-import type { ParamRange } from "../types/param-range";
-import type { BaseFractalParams } from "../types/base-fractal-params";
 import { BASE_FRACTAL_PARAMS } from "../constants/base-fractal-params";
+import { useViewStore } from "./viewStore";
+
+import type { FractalType } from "../types/fractal-type";
+import type { BaseFractalParams } from "../types/base-fractal-params";
 
 export const useFractalStore = defineStore("fractal", {
   state: () => ({
-    currentFractalType: "escape" as FractalType,
-    currentFormulaId: "mandelbrot",
-    zoom: 2.0,
-    offsetShiftX: 0.0,
-    offsetShiftY: 0.0,
-
-    initialParams: { ...BASE_FRACTAL_PARAMS },
-    sliderParams: { ...BASE_FRACTAL_PARAMS },
-    liveParams: { ...BASE_FRACTAL_PARAMS },
-
-    paramConfigs: {
-      relaxation: { min: -2.0, max: 2.0 },
-      power: { min: -10.0, max: 10.0 },
-      maxIterations: { min: 1, max: 500 },
-      juliaMorph: { min: 0.0, max: 1.0 },
-    } as Record<string, ParamRange>,
-    time: 0,
-    mouseX: 0,
-    mouseY: 0,
-    boundMouseX: 0,
-    boundMouseY: 0,
-    smoothedX: 0,
-    smoothedY: 0,
-    activeTargetAxis: null as "x" | "y" | null,
-    bindingsX: ["seedX"] as string[],
-    bindingsY: ["seedY"] as string[],
-    isPaused: false,
-    isUiVisible: true,
+    currentType: "escape" as FractalType,
+    formulaId: "mandelbrot",
+    params: {
+      slider: { ...BASE_FRACTAL_PARAMS } as BaseFractalParams, // What the UI shows
+      live: { ...BASE_FRACTAL_PARAMS }, // What the Shader sees (smoothed)
+      initial: { ...BASE_FRACTAL_PARAMS }, // Anchor for randomization
+    },
   }),
+
   getters: {
     currentFormula: (state) =>
-      FORMULAS.find((f) => f.id === state.currentFormulaId) || FORMULAS[0],
+      FORMULAS.find((f) => f.id === state.formulaId) || FORMULAS[0],
   },
+
   actions: {
     switchFractalType(fractalType?: FractalType) {
       if (fractalType) {
-        this.currentFractalType = fractalType;
+        this.currentType = fractalType;
       }
       const firstFormula = FORMULAS.find(
-        (f) => f.fractalType === this.currentFractalType,
+        (f) => f.fractalType === this.currentType,
       );
       if (firstFormula) {
         this.setFormula(firstFormula.id);
       }
     },
-
     setFormula(id: string) {
       const formula = FORMULAS.find((f) => f.id === id);
       if (!formula) return;
 
-      this.currentFormulaId = id;
-      this.currentFractalType = formula.fractalType;
+      const view = useViewStore();
+      this.formulaId = id;
+      this.currentType = formula.fractalType;
 
-      // 1. Separate Coordinates from Math Parameters
       const { zoom, offsetShiftX, offsetShiftY, ...mathParams } =
         formula.defaults;
+      const merged = { ...BASE_FRACTAL_PARAMS, ...mathParams };
+      this.params.slider = { ...merged };
+      this.params.initial = { ...merged };
+      this.params.live = { ...merged };
 
-      // 2. Apply Math Parameters to Sliders (merged with base)
-      const mergedParams = { ...BASE_FRACTAL_PARAMS, ...mathParams };
-      this.sliderParams = mergedParams;
-      this.initialParams = { ...mergedParams };
-      this.liveParams = { ...mergedParams };
-
-      // 3. Apply View Coordinates to the Store Root
-      if (zoom !== undefined) this.zoom = zoom;
-      if (offsetShiftX !== undefined) this.offsetShiftX = offsetShiftX;
-      if (offsetShiftY !== undefined) this.offsetShiftY = offsetShiftY;
+      if (zoom !== undefined) view.zoom = zoom;
+      if (offsetShiftX !== undefined) view.offset.x = offsetShiftX;
+      if (offsetShiftY !== undefined) view.offset.y = offsetShiftY;
     },
 
     nextFormula() {
-      const currentIndex = FORMULAS.findIndex(
-        (f) => f.id === this.currentFormulaId,
-      );
-      const nextIndex = (currentIndex + 1) % FORMULAS.length;
-      this.setFormula(FORMULAS[nextIndex].id);
+      const idx = FORMULAS.findIndex((f) => f.id === this.formulaId);
+      this.setFormula(FORMULAS[(idx + 1) % FORMULAS.length].id);
     },
 
     prevFormula() {
-      const currentIndex = FORMULAS.findIndex(
-        (f) => f.id === this.currentFormulaId,
+      const idx = FORMULAS.findIndex((f) => f.id === this.formulaId);
+      this.setFormula(
+        FORMULAS[(idx - 1 + FORMULAS.length) % FORMULAS.length].id,
       );
-      const prevIndex = (currentIndex - 1 + FORMULAS.length) % FORMULAS.length;
-      this.setFormula(FORMULAS[prevIndex].id);
-    },
-    updateMouse(x: number, y: number) {
-      this.mouseX = x;
-      this.mouseY = y;
-
-      if (!this.isPaused) {
-        this.boundMouseX = x;
-        this.boundMouseY = y;
-      }
-    },
-    togglePause() {
-      this.isPaused = !this.isPaused;
-    },
-
-    toggleUi() {
-      this.isUiVisible = !this.isUiVisible;
-      if (!this.isUiVisible) {
-        this.activeTargetAxis = null;
-      }
-    },
-
-    toggleTargetAxis(axis: "x" | "y") {
-      this.activeTargetAxis = this.activeTargetAxis === axis ? null : axis;
-    },
-
-    bindVariable(varName: keyof BaseFractalParams) {
-      if (!this.activeTargetAxis) return;
-      this.bindingsX = this.bindingsX.filter((v) => v !== varName);
-      this.bindingsY = this.bindingsY.filter((v) => v !== varName);
-
-      if (this.activeTargetAxis === "x") this.bindingsX.push(varName);
-      if (this.activeTargetAxis === "y") this.bindingsY.push(varName);
-    },
-
-    unbindVariable(varName: string, axis: "x" | "y") {
-      if (axis === "x")
-        this.bindingsX = this.bindingsX.filter((v) => v !== varName);
-      if (axis === "y")
-        this.bindingsY = this.bindingsY.filter((v) => v !== varName);
-    },
-
-    unbindAllVariables() {
-      this.bindingsX = [];
-      this.bindingsY = [];
-    },
-
-    resetView() {
-      gsap.to(this, {
-        zoom: 2.0,
-        offsetShiftX: 0.0,
-        offsetShiftY: 0.0,
-        duration: 1.5,
-        ease: "expo.inOut",
-      });
-    },
-
-    smoothZoom(delta: number) {
-      const zoomSpeed = 0.2;
-      const factor = delta > 0 ? 1 + zoomSpeed : 1 - zoomSpeed;
-      const newZoom = this.zoom * factor;
-
-      const dx = this.mouseX * (this.zoom - newZoom);
-      const dy = this.mouseY * (this.zoom - newZoom);
-
-      gsap.to(this, {
-        zoom: newZoom,
-        offsetShiftX: this.offsetShiftX + dx,
-        offsetShiftY: this.offsetShiftY + dy,
-        duration: 0.4,
-        ease: "power2.out",
-      });
     },
 
     randomizeParams() {
-      const targetValues: Record<string, number> = {};
-      const keys = Object.keys(this.sliderParams) as Array<
-        keyof BaseFractalParams
-      >;
+      const targetValues: Partial<BaseFractalParams> = {};
+      const keys = Object.keys(
+        this.params.slider,
+      ) as (keyof BaseFractalParams)[];
 
       keys.forEach((key) => {
         if (key === "juliaMorph" || key === "maxIterations") return;
 
-        const currentVal = this.initialParams[key];
+        const currentVal = this.params.initial[key] as number;
         const offset = Math.random() / 2 - 0.25;
-        let targetVal = currentVal + offset;
-
-        const config = this.paramConfigs[key];
-        if (config) {
-          if (config.min !== undefined)
-            targetVal = Math.max(config.min, targetVal);
-          if (config.max !== undefined)
-            targetVal = Math.min(config.max, targetVal);
-        }
-        targetValues[key] = targetVal;
+        targetValues[key] = currentVal + offset;
       });
 
-      gsap.to(this.sliderParams, {
+      gsap.to(this.params.slider, {
         ...targetValues,
         duration: 1.5,
         ease: "expo.out",
         overwrite: true,
       });
     },
-
-    // getCurrentState(): FractalState {
-    //   const selectedPalette = usePaletteStore().selectedPalette;
-    //   return {
-    //     type: this.currentFractalType,
-    //     zoom: this.zoom,
-    //     offsetX: this.offsetShiftX,
-    //     offsetY: this.offsetShiftY,
-    //     params: { ...this.sliderParams },
-    //     palette: { ...selectedPalette },
-    //   };
-    // },
-
-    // loadState(state: FractalState) {
-    //   this.currentFractalType = state.type;
-    //   this.zoom = state.zoom;
-    //   this.offsetShiftX = state.offsetX;
-    //   this.offsetShiftY = state.offsetY;
-
-    //   Object.assign(this.sliderParams, state.params);
-    //   usePaletteStore().setPalette(state.palette);
-    // },
   },
 });

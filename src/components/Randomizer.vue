@@ -1,12 +1,12 @@
 <template>
-  <button @click="store.randomizeParams" class="random-btn">
+  <button @click="fractalStore.randomizeParams" class="random-btn">
     <span class="icon">🎲</span>
   </button>
 </template>
 
 <script setup lang="ts">
 import { useFractalStore } from "../store/fractalStore";
-const store = useFractalStore();
+const fractalStore = useFractalStore();
 </script>
 
 <style scoped>

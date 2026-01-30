@@ -10,6 +10,8 @@ import newtonEngine from "../shaders/shared/newton_engine.glsl?raw";
 import { processShader } from "../utils/shaderLoader";
 import { FORMULAS } from "../constants/formulas";
 import { BASE_FRACTAL_PARAMS } from "../constants/base-fractal-params";
+import { useInteractionStore } from "../store/interactionStore";
+import { useViewStore } from "../store/viewStore";
 
 const shaderLibrary = {
   complex_math: complexMath,
@@ -20,6 +22,8 @@ const shaderLibrary = {
 
 export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
   const fractalStore = useFractalStore();
+  const interactionStore = useInteractionStore();
+  const viewStore = useViewStore();
   const paletteStore = usePaletteStore();
   let gl: WebGLRenderingContext;
   let animationFrameId: number;
@@ -97,12 +101,12 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
       gl.STATIC_DRAW,
     );
 
-    switchProgram(fractalStore.currentFormulaId);
+    switchProgram(fractalStore.formulaId);
     render();
   };
 
   watch(
-    () => fractalStore.currentFormulaId,
+    () => fractalStore.formulaId,
     (newId) => {
       switchProgram(newId);
     },
@@ -112,10 +116,7 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
     if (!gl || !activeProgram) return;
     const canvas = canvasRef.value!;
 
-    fractalStore.smoothedX +=
-      (fractalStore.boundMouseX - fractalStore.smoothedX) * 0.08;
-    fractalStore.smoothedY +=
-      (fractalStore.boundMouseY - fractalStore.smoothedY) * 0.08;
+    interactionStore.tickSmoothing();
     const w = Math.floor(canvas.clientWidth);
     const h = Math.floor(canvas.clientHeight);
     if (Math.abs(canvas.width - w) > 1 || Math.abs(canvas.height - h) > 1) {
@@ -125,30 +126,34 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
     }
 
     gl.uniform2f(uniformLocations.resolution, w, h);
-    gl.uniform1f(uniformLocations.zoom, fractalStore.zoom);
-    gl.uniform1f(uniformLocations.offsetShiftX, fractalStore.offsetShiftX);
-    gl.uniform1f(uniformLocations.offsetShiftY, fractalStore.offsetShiftY);
+    if (uniformLocations.zoom)
+      gl.uniform1f(uniformLocations.zoom, viewStore.zoom);
+    if (uniformLocations.offsetShiftX)
+      gl.uniform1f(uniformLocations.offsetShiftX, viewStore.offset.x);
+    if (uniformLocations.offsetShiftY)
+      gl.uniform1f(uniformLocations.offsetShiftY, viewStore.offset.y);
     gl.uniform1f(
       uniformLocations.maxIterations,
-      fractalStore.sliderParams.maxIterations,
+      fractalStore.params.slider.maxIterations,
     );
     gl.uniform1f(uniformLocations.time, performance.now() / 1000);
 
-    const keys = Object.keys(fractalStore.sliderParams);
+    const keys = Object.keys(fractalStore.params.slider);
     keys.forEach((key) => {
       const loc = uniformLocations[key];
       if (!loc) return;
 
-      const baseVal = (fractalStore.sliderParams as any)[key];
-      const sens = key.includes("power") ? 0.3 : 1.0;
+      const baseVal = (fractalStore.params.slider as any)[key];
+      const sens = key.toLowerCase().includes("power") ? 0.3 : 1.0;
+
       let liveVal = baseVal;
-      if (fractalStore.bindingsX.includes(key))
-        liveVal += fractalStore.smoothedX * sens;
-      if (fractalStore.bindingsY.includes(key))
-        liveVal += fractalStore.smoothedY * sens;
+      if (interactionStore.bindings.x.includes(key as any))
+        liveVal += interactionStore.mouse.smoothedX * sens;
+      if (interactionStore.bindings.y.includes(key as any))
+        liveVal += interactionStore.mouse.smoothedY * sens;
 
       gl.uniform1f(loc, liveVal);
-      (fractalStore.liveParams as any)[key] = liveVal;
+      (fractalStore.params.live as any)[key] = liveVal;
     });
 
     const palette = paletteStore.selectedPalette;

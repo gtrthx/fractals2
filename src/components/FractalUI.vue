@@ -6,36 +6,39 @@ import AxisBindings from "./AxisBindings.vue";
 import { computed } from "vue";
 import { FORMULAS } from "../constants/formulas";
 import FractalControls from "./fractal-controls/FractalControls.vue";
+import { useViewStore } from "../store/viewStore";
 
-const store = useFractalStore();
+const fractalStore = useFractalStore();
+const viewStore = useViewStore();
 const availableFormulas = computed(() => {
-  return FORMULAS.filter((f) => f.fractalType === store.currentFractalType);
+  return FORMULAS.filter((f) => f.fractalType === fractalStore.currentType);
 });
 </script>
 
 <template>
   <Transition name="fade">
-    <div id="ui" v-show="store.isUiVisible">
+    <div id="ui" v-show="viewStore.isUiVisible">
       <div class="ui-header">
         <select
-          v-model="store.currentFractalType"
+          v-model="fractalStore.currentType"
           class="fractal-selector"
-          @change="store.switchFractalType()"
+          @change="fractalStore.switchFractalType()"
         >
           <option value="escape">Escape Time</option>
           <option value="newton">Root Finding</option>
           <option value="nova">Nova</option>
         </select>
-        <button class="close-ui-btn" @click="store.toggleUi()">
+        <button class="close-ui-btn" @click="viewStore.toggleUi()">
           <span class="icon">◀</span>
         </button>
       </div>
 
       <div class="formula-selector-container">
         <select
-          :value="store.currentFormulaId"
+          :value="fractalStore.formulaId"
           @change="
-            (e) => store.setFormula((e.target as HTMLSelectElement).value)
+            (e) =>
+              fractalStore.setFormula((e.target as HTMLSelectElement).value)
           "
           class="sub-selector"
         >
@@ -55,7 +58,7 @@ const availableFormulas = computed(() => {
       <div class="footer-actions">
         <PaletteSelector />
         <div class="btn-row">
-          <button @click="store.resetView" class="reset-btn">⟲</button>
+          <button @click="viewStore.resetView" class="reset-btn">⟲</button>
           <Randomizer />
         </div>
         <!-- <PresetGallery /> -->

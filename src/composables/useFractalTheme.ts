@@ -16,7 +16,7 @@ export function useFractalTheme() {
 
   // Centralized Math Symbol Logic
   const mathStyles = computed(() => {
-    const ratio = store.sliderParams.juliaMorph;
+    const ratio = store.params.slider.juliaMorph;
     const isJuliaMode = ratio > 0.5;
 
     const baseStyle = {

@@ -1,10 +1,12 @@
 import { onMounted, onUnmounted } from "vue";
-import { useFractalStore } from "../store/fractalStore";
+import { useInteractionStore } from "../store/interactionStore";
+import { useViewStore } from "../store/viewStore";
 
 export function useMouseInteraction(canvasRef: {
   value: HTMLCanvasElement | null;
 }) {
-  const fractalStore = useFractalStore();
+  const interactionStore = useInteractionStore();
+  const viewStore = useViewStore();
   let isCanvasDragging = false;
 
   const updateMousePos = (e: MouseEvent) => {
@@ -17,7 +19,7 @@ export function useMouseInteraction(canvasRef: {
     const x = (e.clientX - rect.left - canvas.clientWidth / 2) / divisor;
     const y = -(e.clientY - rect.top - canvas.clientHeight / 2) / divisor;
 
-    fractalStore.updateMouse(x, y);
+    interactionStore.updateMouse(x, y);
   };
 
   const handleMouseMove = (e: MouseEvent) => {
@@ -26,22 +28,22 @@ export function useMouseInteraction(canvasRef: {
       if (!canvas) return;
       const divisor = Math.min(canvas.clientWidth, canvas.clientHeight);
 
-      fractalStore.offsetShiftX -= (e.movementX / divisor) * fractalStore.zoom;
-      fractalStore.offsetShiftY += (e.movementY / divisor) * fractalStore.zoom;
+      viewStore.offset.x -= (e.movementX / divisor) * viewStore.zoom;
+      viewStore.offset.y += (e.movementY / divisor) * viewStore.zoom;
     }
 
     updateMousePos(e);
   };
   const handleGlobalClick = (e: MouseEvent) => {
-    if (!fractalStore.activeTargetAxis) return;
+    if (!interactionStore.activeAxis) return;
     if (!(e.target as HTMLElement).closest(".slidable-number")) {
-      fractalStore.activeTargetAxis = null;
+      interactionStore.activeAxis = null;
     }
   };
 
   const handleWheel = (e: WheelEvent) => {
     e.preventDefault();
-    fractalStore.smoothZoom(e.deltaY);
+    viewStore.smoothZoom(e.deltaY);
   };
 
   onMounted(() => {

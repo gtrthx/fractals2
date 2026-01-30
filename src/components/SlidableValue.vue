@@ -3,6 +3,8 @@ import { computed, onUnmounted, ref, watch } from "vue";
 import gsap from "gsap";
 import { useFractalStore } from "../store/fractalStore";
 import type { BaseFractalParams } from "../types/base-fractal-params";
+import { useInteractionStore } from "../store/interactionStore";
+import { PARAM_CONFIGS } from "../constants/param-configs";
 
 const props = defineProps<{
   modelValue: number;
@@ -11,7 +13,8 @@ const props = defineProps<{
   color?: string;
 }>();
 
-const store = useFractalStore();
+const fractalStore = useFractalStore();
+const interactionStore = useInteractionStore();
 const emit = defineEmits(["update:modelValue"]);
 const isDragging = ref(false);
 
@@ -30,13 +33,13 @@ let startX = 0;
 let startValue = 0;
 
 const currentValue = computed(() => {
-  const key = props.varName as keyof typeof store.liveParams;
-  return store.liveParams[key];
+  const key = props.varName as keyof typeof fractalStore.params.live;
+  return fractalStore.params.live[key];
 });
 
 const handleClick = (e: MouseEvent) => {
-  if (store.activeTargetAxis) {
-    store.bindVariable(props.varName as keyof BaseFractalParams);
+  if (interactionStore.activeAxis) {
+    interactionStore.bindVariable(props.varName as keyof BaseFractalParams);
   } else {
     startDrag(e);
   }
@@ -44,8 +47,14 @@ const handleClick = (e: MouseEvent) => {
 
 const handleReset = (e: MouseEvent) => {
   e.stopPropagation();
+
   // @ts-ignore
-  const defaultValue = store.initialParams[props.varName];
+  const defaultValue = fractalStore.params.initial[props.varName];
+
+  if (defaultValue === undefined) {
+    console.warn(`Could not find default value for ${props.varName}`);
+    return;
+  }
 
   gsap.to(tweenTarget, {
     val: defaultValue,
@@ -86,7 +95,7 @@ const onDrag = (e: MouseEvent) => {
   }
 
   // Clamping based on config
-  const config = store.paramConfigs[props.varName as string];
+  const config = PARAM_CONFIGS[props.varName as string];
   if (config) {
     if (config.min !== undefined) targetVal = Math.max(config.min, targetVal);
     if (config.max !== undefined) targetVal = Math.min(config.max, targetVal);
@@ -121,7 +130,7 @@ onUnmounted(() => {
     class="slidable-number"
     :class="{
       'is-dragging': isDragging,
-      'is-pickable': store.activeTargetAxis !== null,
+      'is-pickable': interactionStore.activeAxis !== null,
     }"
     :style="{ color: color || '#646cff' }"
     @mousedown="handleClick"

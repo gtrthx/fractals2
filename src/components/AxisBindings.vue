@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { useFractalTheme } from "../composables/useFractalTheme";
-import { useFractalStore } from "../store/fractalStore";
+import { useInteractionStore } from "../store/interactionStore";
 
-const store = useFractalStore();
+const interactionStore = useInteractionStore();
 
 const { getVarColor } = useFractalTheme();
 
 const getBindings = (axis: "x" | "y") =>
-  axis === "x" ? store.bindingsX : store.bindingsY;
+  axis === "x" ? interactionStore.bindings.x : interactionStore.bindings.y;
 </script>
 
 <template>
@@ -17,10 +17,10 @@ const getBindings = (axis: "x" | "y") =>
       :key="axis"
       class="axis-well"
       :class="{
-        active: store.activeTargetAxis === axis,
+        active: interactionStore.activeAxis === axis,
         empty: getBindings(axis).length === 0,
       }"
-      @click="store.toggleTargetAxis(axis)"
+      @click="interactionStore.toggleTargetAxis(axis)"
     >
       <div class="well-header">
         <span>Mouse {{ axis.toUpperCase() }}</span>
@@ -34,7 +34,7 @@ const getBindings = (axis: "x" | "y") =>
           class="pill"
           :style="{ borderColor: getVarColor(v) }"
           title="Click to remove"
-          @click.stop="store.unbindVariable(v, axis)"
+          @click.stop="interactionStore.unbindVariable(v, axis)"
         >
           {{ v }}
         </div>
