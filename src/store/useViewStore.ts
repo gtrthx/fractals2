@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import gsap from "gsap";
-import { useInteractionStore } from "./interactionStore";
+import { useInputStore } from "./useInputStore";
 
 export const useViewStore = defineStore("view", {
   state: () => ({
@@ -33,7 +33,7 @@ export const useViewStore = defineStore("view", {
     },
 
     smoothZoom(delta: number) {
-      const interaction = useInteractionStore();
+      const interaction = useInputStore();
       const zoomSpeed = 0.2;
       const factor = delta > 0 ? 1 + zoomSpeed : 1 - zoomSpeed;
       const newZoom = this.zoom * factor;
@@ -47,7 +47,6 @@ export const useViewStore = defineStore("view", {
         ease: "power2.out",
       });
 
-      // Directly tween the values inside the offset object
       gsap.to(this.offset, {
         x: this.offset.x + dx,
         y: this.offset.y + dy,

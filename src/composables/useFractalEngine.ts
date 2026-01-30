@@ -1,17 +1,17 @@
 import { onMounted, onUnmounted, watch, type Ref } from "vue";
-import { useFractalStore } from "../store/fractalStore";
+import { useFractalStore } from "../store/useFractalStore";
 import vertSource from "../shaders/base.vert";
-import { usePaletteStore } from "../store/paletteStore";
+import { usePaletteStore } from "../store/usePaletteStore";
 import complexMath from "../shaders/shared/complex_math.glsl?raw";
 import commonHeader from "../shaders/shared/common_header.glsl?raw";
-import escapeEngine from "../shaders/shared/escape_engine.glsl?raw";
-import newtonEngine from "../shaders/shared/newton_engine.glsl?raw";
+import escapeEngine from "../shaders/engines/escape_engine.glsl?raw";
+import newtonEngine from "../shaders/engines/newton_engine.glsl?raw";
 
 import { processShader } from "../utils/shaderLoader";
 import { FORMULAS } from "../constants/formulas";
-import { BASE_FRACTAL_PARAMS } from "../constants/base-fractal-params";
-import { useInteractionStore } from "../store/interactionStore";
-import { useViewStore } from "../store/viewStore";
+import { DEFAULT_FRACTAL_PARAMS } from "../constants/base-fractal-params";
+import { useInputStore } from "../store/useInputStore";
+import { useViewStore } from "../store/useViewStore";
 
 const shaderLibrary = {
   complex_math: complexMath,
@@ -22,7 +22,7 @@ const shaderLibrary = {
 
 export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
   const fractalStore = useFractalStore();
-  const interactionStore = useInteractionStore();
+  const inputStore = useInputStore();
   const viewStore = useViewStore();
   const paletteStore = usePaletteStore();
   let gl: WebGLRenderingContext;
@@ -44,7 +44,7 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
     "osc",
     "phase",
 
-    ...Object.keys(BASE_FRACTAL_PARAMS),
+    ...Object.keys(DEFAULT_FRACTAL_PARAMS),
   ];
 
   const createProgram = (fragSource: string): WebGLProgram => {
@@ -116,7 +116,7 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
     if (!gl || !activeProgram) return;
     const canvas = canvasRef.value!;
 
-    interactionStore.tickSmoothing();
+    inputStore.tickSmoothing();
     const w = Math.floor(canvas.clientWidth);
     const h = Math.floor(canvas.clientHeight);
     if (Math.abs(canvas.width - w) > 1 || Math.abs(canvas.height - h) > 1) {
@@ -147,10 +147,10 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
       const sens = key.toLowerCase().includes("power") ? 0.3 : 1.0;
 
       let liveVal = baseVal;
-      if (interactionStore.bindings.x.includes(key as any))
-        liveVal += interactionStore.mouse.smoothedX * sens;
-      if (interactionStore.bindings.y.includes(key as any))
-        liveVal += interactionStore.mouse.smoothedY * sens;
+      if (inputStore.bindings.x.includes(key as any))
+        liveVal += inputStore.mouse.smoothedX * sens;
+      if (inputStore.bindings.y.includes(key as any))
+        liveVal += inputStore.mouse.smoothedY * sens;
 
       gl.uniform1f(loc, liveVal);
       (fractalStore.params.live as any)[key] = liveVal;

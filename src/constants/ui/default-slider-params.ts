@@ -1,10 +1,10 @@
-export const DEFAULT_SLIDER_PARAMS: Record<
+export const DEFAULT_SLIDER_CONSTRAINTS: Record<
   string,
   { min: number; max: number; step: number }
 > = {
   power: { min: -10, max: 10, step: 0.01 },
   powerI: { min: -10, max: 10, step: 0.01 },
-  juliaMorph: { min: 0, max: 1, step: 0.001 },
+  juliaMorph: { min: 0, max: 1.0, step: 0.01 },
   seedX: { min: -2, max: 2, step: 0.01 },
   seedY: { min: -2, max: 2, step: 0.01 },
   memoryR: { min: -1, max: 1, step: 0.01 },

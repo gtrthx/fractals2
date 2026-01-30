@@ -1,20 +1,21 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from "vue";
 import gsap from "gsap";
-import { useFractalStore } from "../store/fractalStore";
-import type { BaseFractalParams } from "../types/base-fractal-params";
-import { useInteractionStore } from "../store/interactionStore";
-import { PARAM_CONFIGS } from "../constants/param-configs";
+import { useFractalStore } from "../../store/useFractalStore";
+import { useInputStore } from "../../store/useInputStore";
+import type { FractalParams } from "../../types/fractal";
 
 const props = defineProps<{
   modelValue: number;
-  step?: number;
-  varName: string;
-  color?: string;
+  step: number;
+  min: number;
+  max: number;
+  color: string;
+  paramKey: keyof FractalParams;
 }>();
 
 const fractalStore = useFractalStore();
-const interactionStore = useInteractionStore();
+const inputStore = useInputStore();
 const emit = defineEmits(["update:modelValue"]);
 const isDragging = ref(false);
 
@@ -33,13 +34,13 @@ let startX = 0;
 let startValue = 0;
 
 const currentValue = computed(() => {
-  const key = props.varName as keyof typeof fractalStore.params.live;
+  const key = props.paramKey as keyof typeof fractalStore.params.live;
   return fractalStore.params.live[key];
 });
 
 const handleClick = (e: MouseEvent) => {
-  if (interactionStore.activeAxis) {
-    interactionStore.bindVariable(props.varName as keyof BaseFractalParams);
+  if (inputStore.activeAxis) {
+    inputStore.bindVariable(props.paramKey as keyof FractalParams);
   } else {
     startDrag(e);
   }
@@ -48,11 +49,10 @@ const handleClick = (e: MouseEvent) => {
 const handleReset = (e: MouseEvent) => {
   e.stopPropagation();
 
-  // @ts-ignore
-  const defaultValue = fractalStore.params.initial[props.varName];
+  const defaultValue = fractalStore.params.initial[props.paramKey];
 
   if (defaultValue === undefined) {
-    console.warn(`Could not find default value for ${props.varName}`);
+    console.warn(`Could not find default value for ${props.paramKey}`);
     return;
   }
 
@@ -94,12 +94,8 @@ const onDrag = (e: MouseEvent) => {
     targetVal = rawVal - Math.sign(diff) * magnetWidth;
   }
 
-  // Clamping based on config
-  const config = PARAM_CONFIGS[props.varName as string];
-  if (config) {
-    if (config.min !== undefined) targetVal = Math.max(config.min, targetVal);
-    if (config.max !== undefined) targetVal = Math.min(config.max, targetVal);
-  }
+  if (props.min !== undefined) targetVal = Math.max(props.min, targetVal);
+  if (props.max !== undefined) targetVal = Math.min(props.max, targetVal);
 
   gsap.to(tweenTarget, {
     val: targetVal,
@@ -130,7 +126,7 @@ onUnmounted(() => {
     class="slidable-number"
     :class="{
       'is-dragging': isDragging,
-      'is-pickable': interactionStore.activeAxis !== null,
+      'is-pickable': inputStore.activeAxis !== null,
     }"
     :style="{ color: color || '#646cff' }"
     @mousedown="handleClick"

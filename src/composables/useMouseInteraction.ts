@@ -1,11 +1,11 @@
 import { onMounted, onUnmounted } from "vue";
-import { useInteractionStore } from "../store/interactionStore";
-import { useViewStore } from "../store/viewStore";
+import { useInputStore } from "../store/useInputStore";
+import { useViewStore } from "../store/useViewStore";
 
 export function useMouseInteraction(canvasRef: {
   value: HTMLCanvasElement | null;
 }) {
-  const interactionStore = useInteractionStore();
+  const inputStore = useInputStore();
   const viewStore = useViewStore();
   let isCanvasDragging = false;
 
@@ -14,30 +14,30 @@ export function useMouseInteraction(canvasRef: {
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
-    const divisor = Math.min(canvas.clientWidth, canvas.clientHeight);
+    const baseDimention = Math.min(canvas.clientWidth, canvas.clientHeight);
 
-    const x = (e.clientX - rect.left - canvas.clientWidth / 2) / divisor;
-    const y = -(e.clientY - rect.top - canvas.clientHeight / 2) / divisor;
+    const x = (e.clientX - rect.left - canvas.clientWidth / 2) / baseDimention;
+    const y = -(e.clientY - rect.top - canvas.clientHeight / 2) / baseDimention;
 
-    interactionStore.updateMouse(x, y);
+    inputStore.updateMouse(x, y);
   };
 
   const handleMouseMove = (e: MouseEvent) => {
     if (isCanvasDragging && e.buttons === 1) {
       const canvas = canvasRef.value;
       if (!canvas) return;
-      const divisor = Math.min(canvas.clientWidth, canvas.clientHeight);
+      const baseDimention = Math.min(canvas.clientWidth, canvas.clientHeight);
 
-      viewStore.offset.x -= (e.movementX / divisor) * viewStore.zoom;
-      viewStore.offset.y += (e.movementY / divisor) * viewStore.zoom;
+      viewStore.offset.x -= (e.movementX / baseDimention) * viewStore.zoom;
+      viewStore.offset.y += (e.movementY / baseDimention) * viewStore.zoom;
     }
 
     updateMousePos(e);
   };
   const handleGlobalClick = (e: MouseEvent) => {
-    if (!interactionStore.activeAxis) return;
+    if (!inputStore.activeAxis) return;
     if (!(e.target as HTMLElement).closest(".slidable-number")) {
-      interactionStore.activeAxis = null;
+      inputStore.activeAxis = null;
     }
   };
 

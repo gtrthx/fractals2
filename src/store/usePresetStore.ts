@@ -1,12 +1,11 @@
 import { defineStore } from "pinia";
 import { DEFAULT_PRESETS } from "../constants/default-presets";
-import type { FractalState } from "../types/fractal-state";
-import type { Preset } from "../types/preset";
+import type { Preset, FractalState } from "../types/fractal";
 
 export const usePresetStore = defineStore("presets", {
   state: () => ({
     userPresets: JSON.parse(
-      localStorage.getItem("user_presets") || "[]"
+      localStorage.getItem("user_presets") || "[]",
     ) as Preset[],
     defaultPresets: DEFAULT_PRESETS,
   }),

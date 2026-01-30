@@ -2,27 +2,30 @@
 import { ref } from "vue";
 import { getPaletteCSS } from "../utils/getPaletteCss";
 import { palettes } from "../constants/palettes";
-import { usePaletteStore } from "../store/paletteStore";
+import { usePaletteStore } from "../store/usePaletteStore";
 
 const paletteStore = usePaletteStore();
-const isOpen = ref(false);
+const isDropdownExpanded = ref(false);
 </script>
 
 <template>
   <div class="palette-controls">
     <div class="palette-dropdown">
-      <button class="dropdown-trigger" @click="isOpen = !isOpen">
+      <button
+        class="dropdown-trigger"
+        @click="isDropdownExpanded = !isDropdownExpanded"
+      >
         <div
           class="preview-bar"
           :style="{
             background: getPaletteCSS(paletteStore.selectedPalette),
           }"
         ></div>
-        <span class="arrow">{{ isOpen ? "▲" : "▼" }}</span>
+        <span class="arrow">{{ isDropdownExpanded ? "▲" : "▼" }}</span>
       </button>
 
       <transition name="fade">
-        <div v-if="isOpen" class="dropdown-menu">
+        <div v-if="isDropdownExpanded" class="dropdown-menu">
           <div class="palette-grid">
             <div
               v-for="(p, index) in palettes"

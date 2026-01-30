@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { palettes } from "../constants/palettes";
 import gsap from "gsap";
-import type { Palette } from "../types/palette";
+import type { Palette } from "../types/ui";
 
 export const usePaletteStore = defineStore("palette", {
   state: () => ({

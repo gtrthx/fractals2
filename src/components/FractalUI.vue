@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { useFractalStore } from "../store/fractalStore";
+import { useFractalStore } from "../store/useFractalStore";
 import PaletteSelector from "./PaletteSelector.vue";
-import Randomizer from "./Randomizer.vue";
-import AxisBindings from "./AxisBindings.vue";
+import FractalRandomizer from "./FractalRandomizer.vue";
+import InputAxisBindings from "./InputAxisBindings.vue";
 import { computed } from "vue";
 import { FORMULAS } from "../constants/formulas";
 import FractalControls from "./fractal-controls/FractalControls.vue";
-import { useViewStore } from "../store/viewStore";
+import { useViewStore } from "../store/useViewStore";
 
 const fractalStore = useFractalStore();
 const viewStore = useViewStore();
@@ -47,19 +47,19 @@ const availableFormulas = computed(() => {
             :key="formula.id"
             :value="formula.id"
           >
-            {{ formula.mathSymbol }} ({{ formula.name }})
+            {{ formula.displayString }} ({{ formula.name }})
           </option>
         </select>
       </div>
       <FractalControls></FractalControls>
 
-      <AxisBindings />
+      <InputAxisBindings />
 
       <div class="footer-actions">
         <PaletteSelector />
         <div class="btn-row">
           <button @click="viewStore.resetView" class="reset-btn">⟲</button>
-          <Randomizer />
+          <FractalRandomizer />
         </div>
         <!-- <PresetGallery /> -->
       </div>

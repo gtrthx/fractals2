@@ -1,9 +1,9 @@
 import { computed } from "vue";
-import { useFractalStore } from "../store/fractalStore";
+import { useFractalStore } from "../store/useFractalStore";
 import { type ColorKey, UI_COLORS, VAR_COLOR_MAP } from "../constants/ui/theme";
 
 export function useFractalTheme() {
-  const store = useFractalStore();
+  const fractalStore = useFractalStore();
 
   const getColor = (key: ColorKey | string): string => {
     return UI_COLORS[key as ColorKey] || UI_COLORS.default;
@@ -16,7 +16,7 @@ export function useFractalTheme() {
 
   // Centralized Math Symbol Logic
   const mathStyles = computed(() => {
-    const ratio = store.params.slider.juliaMorph;
+    const ratio = fractalStore.params.slider.juliaMorph;
     const isJuliaMode = ratio > 0.5;
 
     const baseStyle = {
@@ -25,13 +25,13 @@ export function useFractalTheme() {
 
     return {
       // z is Coordinate (Blue) in Julia, White in Mandelbrot
-      z: {
+      zStyle: {
         ...baseStyle,
         color: isJuliaMode ? UI_COLORS.seed : UI_COLORS.iter,
         opacity: isJuliaMode ? 1.0 : 0.6,
       },
       // c is Seed (Blue) in Mandelbrot, White in Julia
-      c: {
+      cStyle: {
         ...baseStyle,
         color: !isJuliaMode ? UI_COLORS.seed : UI_COLORS.iter,
         opacity: !isJuliaMode ? 1.0 : 0.6,

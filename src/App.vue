@@ -4,10 +4,10 @@ import { useFractalEngine } from "./composables/useFractalEngine";
 import { useMouseInteraction } from "./composables/useMouseInteraction";
 import FractalUI from "./components/FractalUI.vue";
 import { useKeyboardShortcuts } from "./composables/useKeyboardShortcuts";
-import { useInteractionStore } from "./store/interactionStore";
+import { useInputStore } from "./store/useInputStore";
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
-const interactionStore = useInteractionStore();
+const inputStore = useInputStore();
 
 useFractalEngine(canvasRef);
 useKeyboardShortcuts();
@@ -18,8 +18,8 @@ useMouseInteraction(canvasRef);
   <div
     class="app-container"
     :class="{
-      'selecting-x': interactionStore.activeAxis === 'x',
-      'selecting-y': interactionStore.activeAxis === 'y',
+      'selecting-x': inputStore.activeAxis === 'x',
+      'selecting-y': inputStore.activeAxis === 'y',
     }"
   >
     <FractalUI />

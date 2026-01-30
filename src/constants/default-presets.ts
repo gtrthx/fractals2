@@ -1,4 +1,4 @@
-import type { Preset } from "../types/preset";
+import type { Preset } from "../types/fractal";
 
 export const DEFAULT_PRESETS: Preset[] = [
   // {

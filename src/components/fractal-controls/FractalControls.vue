@@ -1,16 +1,13 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useFractalStore } from "../../store/fractalStore";
+import { useFractalStore } from "../../store/useFractalStore";
 import { useFractalTheme } from "../../composables/useFractalTheme";
-import SlidableValue from "../SlidableValue.vue";
+import BaseSlider from "./BaseSlider.vue";
 
 import { BASE_CONTROL_GROUPS } from "../../constants/ui/base-control-groups";
 import { FORMULAS } from "../../constants/formulas";
-import { DEFAULT_SLIDER_PARAMS } from "../../constants/ui/default-slider-params";
-
-import type { ControlGroup } from "../../types/control-group";
-import type { SliderSchema } from "../../types/slider-schema";
-import type { BaseFractalParams } from "../../types/base-fractal-params";
+import { DEFAULT_SLIDER_CONSTRAINTS } from "../../constants/ui/default-slider-params";
+import type { ControlGroup, SliderSchema } from "../../types/ui";
 
 const fractalStore = useFractalStore();
 const { colors, getColor, mathStyles } = useFractalTheme();
@@ -25,14 +22,14 @@ const activeControls = computed<ControlGroup[]>(() => {
   const iterationGroup: ControlGroup = {
     label: "Iterations",
     colorKey: "iter",
-    sliders: [{ varName: "maxIterations" } as SliderSchema],
+    sliders: [{ paramKey: "maxIterations" } as SliderSchema],
   };
 
   return [...groups, iterationGroup];
 });
 
 const getSliderProps = (slider: SliderSchema) => ({
-  ...DEFAULT_SLIDER_PARAMS[slider.varName],
+  ...DEFAULT_SLIDER_CONSTRAINTS[slider.paramKey],
   ...slider,
 });
 </script>
@@ -41,100 +38,100 @@ const getSliderProps = (slider: SliderSchema) => ({
   <div class="fractal-controls">
     <div id="formula-display">
       <template v-if="fractalStore.formulaId === 'mandelbrot'">
-        <span :style="mathStyles.z">z</span>
+        <span :style="mathStyles.zStyle">z</span>
         <sup :style="{ color: colors.power }">P</sup> +
-        <span :style="mathStyles.c">c</span>
+        <span :style="mathStyles.cStyle">c</span>
       </template>
 
       <template v-else-if="fractalStore.formulaId === 'burning-ship'">
-        (|Re(<span :style="mathStyles.z">z</span>)| + i|Im(<span
-          :style="mathStyles.z"
+        (|Re(<span :style="mathStyles.zStyle">z</span>)| + i|Im(<span
+          :style="mathStyles.zStyle"
           >z</span
         >)|) <sup :style="{ color: colors.power }">P</sup> +
-        <span :style="mathStyles.c">c</span>
+        <span :style="mathStyles.cStyle">c</span>
       </template>
 
       <template v-else-if="fractalStore.formulaId === 'tricorn'">
-        <span :style="mathStyles.z">z̅</span>
+        <span :style="mathStyles.zStyle">z̅</span>
         <sup :style="{ color: colors.power }">P</sup> +
-        <span :style="mathStyles.c">c</span>
+        <span :style="mathStyles.cStyle">c</span>
       </template>
 
       <template v-else-if="fractalStore.formulaId === 'buffalo'">
-        |<span :style="mathStyles.z">z</span
+        |<span :style="mathStyles.zStyle">z</span
         ><sup :style="{ color: colors.power }">P</sup>| +
-        <span :style="mathStyles.c">c</span>
+        <span :style="mathStyles.cStyle">c</span>
       </template>
 
       <template v-else-if="fractalStore.formulaId === 'celtic'">
-        |Re(<span :style="mathStyles.z">z</span
+        |Re(<span :style="mathStyles.zStyle">z</span
         ><sup :style="{ color: colors.power }">P</sup>)| + iIm(<span
-          :style="mathStyles.z"
+          :style="mathStyles.zStyle"
           >z</span
         ><sup :style="{ color: colors.power }">P</sup>) +
-        <span :style="mathStyles.c">c</span>
+        <span :style="mathStyles.cStyle">c</span>
       </template>
 
       <template v-else-if="fractalStore.formulaId === 'magnet'">
-        ((<span :style="mathStyles.z">z</span>² +
-        <span :style="mathStyles.c">c</span> - 1) / (2<span
-          :style="mathStyles.z"
+        ((<span :style="mathStyles.zStyle">z</span>² +
+        <span :style="mathStyles.cStyle">c</span> - 1) / (2<span
+          :style="mathStyles.zStyle"
           >z</span
         >
-        + <span :style="mathStyles.c">c</span> - 2))
+        + <span :style="mathStyles.cStyle">c</span> - 2))
         <sup :style="{ color: colors.power }">P</sup>
       </template>
 
       <template v-else-if="fractalStore.formulaId === 'inv-mandel'">
-        <span :style="mathStyles.z">z</span
+        <span :style="mathStyles.zStyle">z</span
         ><sup :style="{ color: colors.power }">P</sup> + 1/
-        <span :style="mathStyles.c">c</span>
+        <span :style="mathStyles.cStyle">c</span>
       </template>
 
       <template v-else-if="fractalStore.formulaId === 'inv-exp'">
-        1/<span :style="mathStyles.z">z</span
+        1/<span :style="mathStyles.zStyle">z</span
         ><sup :style="{ color: colors.power }">P</sup> +
-        <span :style="mathStyles.c">c</span>
+        <span :style="mathStyles.cStyle">c</span>
       </template>
 
       <template v-else-if="fractalStore.formulaId === 'lambda'">
-        <span :style="mathStyles.c">c</span> ·
-        <span :style="mathStyles.z">z</span>(1 -
-        <span :style="mathStyles.z">z</span>)
+        <span :style="mathStyles.cStyle">c</span> ·
+        <span :style="mathStyles.zStyle">z</span>(1 -
+        <span :style="mathStyles.zStyle">z</span>)
       </template>
 
       <template v-else-if="fractalStore.formulaId === 'spider'">
         <div class="spider-layout">
           <div>
-            <span :style="mathStyles.z">z</span
+            <span :style="mathStyles.zStyle">z</span
             ><sup :style="{ color: colors.power }">P</sup> +
-            <span :style="mathStyles.c">c</span>
+            <span :style="mathStyles.cStyle">c</span>
           </div>
           <div class="sub-formula">
-            <span :style="mathStyles.c">c</span> →
-            <span :style="mathStyles.c">c</span>/2 +
-            <span :style="mathStyles.z">z</span>
+            <span :style="mathStyles.cStyle">c</span> →
+            <span :style="mathStyles.cStyle">c</span>/2 +
+            <span :style="mathStyles.zStyle">z</span>
           </div>
         </div>
       </template>
 
       <template v-else-if="fractalStore.formulaId === 'heart'">
-        (|Re(<span :style="mathStyles.z">z</span>)| + iIm(<span
-          :style="mathStyles.z"
+        (|Re(<span :style="mathStyles.zStyle">z</span>)| + iIm(<span
+          :style="mathStyles.zStyle"
           >z</span
         >)) <sup :style="{ color: colors.power }">P</sup> +
-        <span :style="mathStyles.c">c</span>
+        <span :style="mathStyles.cStyle">c</span>
       </template>
 
       <template v-if="fractalStore.formulaId === 'newton-std'">
-        <span :style="mathStyles.z">z</span
+        <span :style="mathStyles.zStyle">z</span
         ><sup :style="{ color: colors.power }">P</sup> - 1 = 0
       </template>
 
       <template v-else-if="fractalStore.formulaId === 'newton-sin'">
-        <span :style="mathStyles.z">z</span> -
+        <span :style="mathStyles.zStyle">z</span> -
         <span :style="{ color: colors.power }">a</span> · tan(<span
-          :style="mathStyles.z"
+          :style="mathStyles.zStyle"
           >z</span
         >)
       </template>
@@ -151,20 +148,16 @@ const getSliderProps = (slider: SliderSchema) => ({
         {{ group.label }}:
       </div>
 
-      <template v-for="slider in group.sliders" :key="slider.varName">
+      <template v-for="slider in group.sliders" :key="slider.paramKey">
         <span
           v-if="slider.showPlus"
           :style="{ color: getColor(group.colorKey) }"
           >+</span
         >
 
-        <SlidableValue
-          v-model="
-            fractalStore.params.slider[
-              slider.varName as keyof BaseFractalParams
-            ]
-          "
-          :varName="slider.varName"
+        <BaseSlider
+          v-model="fractalStore.params.slider[slider.paramKey]"
+          :paramKey="slider.paramKey"
           :color="getColor(group.colorKey)"
           :step="getSliderProps(slider).step"
           :min="getSliderProps(slider).min"

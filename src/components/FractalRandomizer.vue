@@ -1,13 +1,13 @@
+<script setup lang="ts">
+import { useFractalStore } from "../store/useFractalStore";
+const fractalStore = useFractalStore();
+</script>
+
 <template>
   <button @click="fractalStore.randomizeParams" class="random-btn">
     <span class="icon">🎲</span>
   </button>
 </template>
-
-<script setup lang="ts">
-import { useFractalStore } from "../store/fractalStore";
-const fractalStore = useFractalStore();
-</script>
 
 <style scoped>
 .random-btn {

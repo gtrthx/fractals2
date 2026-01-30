@@ -1,4 +1,4 @@
-import type { Palette } from "../types/palette";
+import type { Palette } from "../types/ui";
 
 const clamp = (val: number) => Math.max(0, Math.min(255, val));
 

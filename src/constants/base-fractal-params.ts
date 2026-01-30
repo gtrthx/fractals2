@@ -1,6 +1,6 @@
-import type { BaseFractalParams } from "../types/base-fractal-params";
+import type { FractalParams } from "../types/fractal";
 
-export const BASE_FRACTAL_PARAMS: BaseFractalParams = {
+export const DEFAULT_FRACTAL_PARAMS: FractalParams = {
   maxIterations: 100,
   power: 2.0,
   powerI: 0.0,

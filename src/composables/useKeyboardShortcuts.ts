@@ -1,19 +1,19 @@
 import { onMounted, onUnmounted } from "vue";
-import { useFractalStore } from "../store/fractalStore";
-import { usePaletteStore } from "../store/paletteStore";
-import { useInteractionStore } from "../store/interactionStore";
-import { useViewStore } from "../store/viewStore";
+import { useFractalStore } from "../store/useFractalStore";
+import { usePaletteStore } from "../store/usePaletteStore";
+import { useInputStore } from "../store/useInputStore";
+import { useViewStore } from "../store/useViewStore";
 
 export function useKeyboardShortcuts() {
   const fractalStore = useFractalStore();
   const paletteStore = usePaletteStore();
-  const interactionStore = useInteractionStore();
+  const inputStore = useInputStore();
   const viewStore = useViewStore();
 
   const shortcuts: Record<string, (e: KeyboardEvent) => void> = {
     Space: (e) => {
       e.preventDefault();
-      interactionStore.togglePause();
+      inputStore.togglePause();
     },
     KeyW: (e) => {
       e.preventDefault();
@@ -28,9 +28,9 @@ export function useKeyboardShortcuts() {
     KeyT: () => paletteStore.generateRandomPalette(),
 
     KeyR: () => fractalStore.randomizeParams(),
-    KeyA: () => interactionStore.toggleTargetAxis("x"),
-    KeyD: () => interactionStore.toggleTargetAxis("y"),
-    KeyG: () => interactionStore.unbindAll(),
+    KeyA: () => inputStore.toggleTargetAxis("x"),
+    KeyD: () => inputStore.toggleTargetAxis("y"),
+    KeyG: () => inputStore.unbindAll(),
 
     Digit1: () => fractalStore.switchFractalType("escape"),
     Digit2: () => fractalStore.switchFractalType("newton"),
