@@ -3,11 +3,18 @@ import { useFractalTheme } from "../composables/useFractalTheme";
 import { useInputStore } from "../store/useInputStore";
 
 const inputStore = useInputStore();
-
 const { getVarColor } = useFractalTheme();
 
 const getBindings = (axis: "x" | "y") =>
   axis === "x" ? inputStore.bindings.x : inputStore.bindings.y;
+
+/**
+ * Explicit toggle helper to ensure we don't
+ * trigger parent clicks when clicking pills.
+ */
+const handleWellClick = (axis: "x" | "y") => {
+  inputStore.toggleTargetAxis(axis);
+};
 </script>
 
 <template>
@@ -17,14 +24,15 @@ const getBindings = (axis: "x" | "y") =>
       :key="axis"
       class="axis-well"
       :class="{
-        active: inputStore.activeAxis === axis,
-        empty: getBindings(axis).length === 0,
+        'is-active': inputStore.activeAxis === axis,
+        'is-empty': getBindings(axis).length === 0,
       }"
-      @click="inputStore.toggleTargetAxis(axis)"
+      @click="handleWellClick(axis)"
     >
+      <div v-if="inputStore.activeAxis === axis" class="active-glow"></div>
+
       <div class="well-header">
-        <span>Mouse {{ axis.toUpperCase() }}</span>
-        <div v-if="getBindings(axis).length > 0" class="plus-btn-small">+</div>
+        <span class="axis-label">Mouse {{ axis.toUpperCase() }}</span>
       </div>
 
       <div v-if="getBindings(axis).length > 0" class="pill-box">
@@ -32,17 +40,18 @@ const getBindings = (axis: "x" | "y") =>
           v-for="v in getBindings(axis)"
           :key="v"
           class="pill"
-          :style="{ borderColor: getVarColor(v) }"
+          :style="{ borderColor: getVarColor(v), color: getVarColor(v) }"
           title="Click to remove"
           @click.stop="inputStore.unbindVariable(v, axis)"
         >
           {{ v }}
+          <span class="remove-x">×</span>
         </div>
       </div>
 
       <div v-else class="empty-state">
         <div class="big-plus">+</div>
-        <span class="empty-text">Bind variable</span>
+        <span class="empty-text">Click to bind variables</span>
       </div>
     </div>
   </div>
@@ -52,107 +61,121 @@ const getBindings = (axis: "x" | "y") =>
 .axis-container {
   display: flex;
   gap: 12px;
-  margin-top: 20px;
+  padding: 10px;
 }
 
 .axis-well {
   flex: 1;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 12px;
   min-height: 80px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
   cursor: pointer;
   position: relative;
-  display: flex;
-  flex-direction: column;
+  overflow: hidden;
+  transition: all 0.2s ease;
 }
 
 .axis-well:hover {
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.2);
 }
 
-.axis-well.active {
-  border-color: #646cff;
-  background: rgba(100, 108, 255, 0.12);
-  box-shadow: 0 0 15px rgba(100, 108, 255, 0.1);
+/* The "Binding Mode" active state */
+.axis-well.is-active {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: #646cff; /* Or your theme primary color */
+  box-shadow: 0 0 15px rgba(100, 108, 255, 0.3);
+}
+
+.active-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(100, 108, 255, 0.1),
+    transparent
+  );
+  animation: slide 2s infinite linear;
+}
+
+@keyframes slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
 }
 
 .well-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #666;
   margin-bottom: 8px;
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.6;
 }
 
-.axis-well.active .well-header {
-  color: #aaa;
-}
-
-.plus-btn-small {
-  font-size: 16px;
-  line-height: 1;
-  color: #888;
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
 }
 
 .pill-box {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  position: relative;
+  z-index: 2;
 }
 
 .pill {
+  padding: 2px 8px;
+  border: 1px solid;
+  border-radius: 12px;
   font-size: 11px;
-  padding: 4px 8px;
-  background: rgba(0, 0, 0, 0.4);
-  border-left: 3px solid;
-  border-radius: 4px;
-  color: #eee;
-  transition:
-    transform 0.1s,
-    background 0.2s;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .pill:hover {
   background: rgba(255, 0, 0, 0.2);
-  transform: translateY(-1px);
+  border-color: #ff4444 !important;
+  color: white !important;
+}
+
+.remove-x {
+  font-size: 14px;
+  line-height: 1;
 }
 
 .empty-state {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding-top: 4px;
   opacity: 0.3;
-  transition: opacity 0.2s;
-}
-
-.axis-well:hover .empty-state {
-  opacity: 0.6;
 }
 
 .big-plus {
-  font-size: 24px;
-  font-weight: 200;
+  font-size: 20px;
   margin-bottom: 2px;
 }
 
 .empty-text {
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.axis-well.active .empty-state {
-  opacity: 0.8;
-  color: #646cff;
+  font-size: 10px;
 }
 </style>

@@ -36,7 +36,7 @@ export function useMouseInteraction(canvasRef: {
   };
   const handleGlobalClick = (e: MouseEvent) => {
     if (!inputStore.activeAxis) return;
-    if (!(e.target as HTMLElement).closest(".slidable-number")) {
+    if (!(e.target as HTMLElement).closest(".axis-container")) {
       inputStore.activeAxis = null;
     }
   };

@@ -37,6 +37,7 @@ export function useKeyboardShortcuts() {
     Digit3: () => fractalStore.switchFractalType("nova"),
     ArrowRight: () => fractalStore.nextFormula(),
     ArrowLeft: () => fractalStore.prevFormula(),
+    Escape: () => (inputStore.activeAxis = null),
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {
