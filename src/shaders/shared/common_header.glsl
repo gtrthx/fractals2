@@ -11,10 +11,12 @@ uniform float maxIterations;
 uniform float time;
 
 // Fractal Parameters
-uniform float relaxation;
 uniform float subtrahend;
+uniform float subtrahendI;
 uniform float power;
 uniform float powerI;
+uniform float relaxation;
+uniform float relaxationI;
 uniform float seedX;
 uniform float seedY;
 uniform float juliaMorph;

@@ -9,7 +9,6 @@ import FractalControls from "./fractal-controls/FractalControls.vue";
 
 const store = useFractalStore();
 const availableFormulas = computed(() => {
-  console.log("blabla");
   return FORMULAS.filter((f) => f.fractalType === store.currentFractalType);
 });
 </script>
@@ -154,6 +153,22 @@ const availableFormulas = computed(() => {
 
 .formula-selector-container {
   padding: 0 0 15px;
+  position: relative;
+}
+
+.formula-selector-container::after {
+  content: "▼";
+  font-size: 12px;
+  position: absolute;
+  right: 12px; /* Adjust this to move the arrow */
+  top: 18px;
+  transform: translateY(-50%);
+  color: #888;
+  pointer-events: none; /* Crucial so clicks pass through to the select */
+}
+
+.formula-selector-container:hover::after {
+  color: #ffaa00;
 }
 
 .sub-selector {
@@ -166,6 +181,7 @@ const availableFormulas = computed(() => {
   font-family: "Courier New", Courier, monospace;
   font-size: 0.9em;
   outline: none;
+  appearance: none;
   cursor: pointer;
 }
 

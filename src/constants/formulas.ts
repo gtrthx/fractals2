@@ -9,6 +9,8 @@ import invMandelRaw from "../shaders/escape/inv_mandel.frag?raw";
 import spiderRaw from "../shaders/escape/spider.frag?raw";
 import heartRaw from "../shaders/escape/heart.frag?raw";
 import lambdaRaw from "../shaders/escape/lambda.frag?raw";
+import newtonStdRaw from "../shaders/newton/newton_std.frag?raw";
+import newtonSinRaw from "../shaders/newton/newton_sin.frag?raw";
 import type { FormulaDefinition } from "../types/formula-definition";
 
 export const FORMULAS: FormulaDefinition[] = [
@@ -99,5 +101,23 @@ export const FORMULAS: FormulaDefinition[] = [
     mathSymbol: "(|Re(z)| + iIm(z))² + c",
     shaderSource: heartRaw,
     defaults: { zoom: 2.5, offsetShiftX: 0.0, power: 2.0 },
+  },
+
+  // Newton formulas
+  {
+    id: "newton-std",
+    name: "Newton Standard",
+    fractalType: "newton",
+    mathSymbol: "zᴾ - 1 = 0",
+    shaderSource: newtonStdRaw,
+    defaults: { zoom: 3.0, offsetShiftX: 0.0, power: 3.0 },
+  },
+  {
+    id: "newton-sin",
+    name: "Newton Sine",
+    fractalType: "newton",
+    mathSymbol: "zₙ₊₁ = z - a·tan(z)",
+    shaderSource: newtonSinRaw,
+    defaults: { zoom: 5.0, offsetShiftX: 0.0, power: 1.0, subtrahend: 0.0 },
   },
 ];

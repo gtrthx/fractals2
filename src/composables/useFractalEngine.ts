@@ -5,6 +5,7 @@ import { usePaletteStore } from "../store/paletteStore";
 import complexMath from "../shaders/shared/complex_math.glsl?raw";
 import commonHeader from "../shaders/shared/common_header.glsl?raw";
 import escapeEngine from "../shaders/shared/escape_engine.glsl?raw";
+import newtonEngine from "../shaders/shared/newton_engine.glsl?raw";
 
 import { processShader } from "../utils/shaderLoader";
 import { FORMULAS } from "../constants/formulas";
@@ -14,6 +15,7 @@ const shaderLibrary = {
   complex_math: complexMath,
   common_header: commonHeader,
   escape_engine: escapeEngine,
+  newton_engine: newtonEngine,
 };
 
 export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {

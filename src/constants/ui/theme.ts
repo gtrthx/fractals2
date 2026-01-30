@@ -1,0 +1,28 @@
+export const UI_COLORS = {
+  power: "#ffaa00",
+  seed: "#55aaff",
+  morph: "#ff00aa",
+  memory: "#00ffaa",
+  iter: "#ffffff",
+  default: "#646cff",
+  relaxation: "#646cff",
+  subtrahend: "#646cff",
+} as const;
+
+export type ColorKey = keyof typeof UI_COLORS;
+
+// Map specific variable names to their visual group
+export const VAR_COLOR_MAP: Record<string, ColorKey> = {
+  seedX: "seed",
+  seedY: "seed",
+  power: "power",
+  powerI: "power",
+  juliaMorph: "morph",
+  memoryR: "memory",
+  memoryI: "memory",
+  maxIterations: "iter",
+  relaxation: "relaxation",
+  relaxationI: "relaxation",
+  subtrahend: "subtrahend",
+  subtrahendI: "subtrahend",
+};

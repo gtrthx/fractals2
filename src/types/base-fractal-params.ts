@@ -8,7 +8,9 @@ export interface BaseFractalParams {
   memoryR: number;
   memoryI: number;
   subtrahend: number;
+  subtrahendI: number;
   relaxation: number;
+  relaxationI: number;
   powerSecondary: number;
   powerSecondaryI: number;
   dampingR: number;

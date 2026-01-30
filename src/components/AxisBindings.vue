@@ -1,21 +1,10 @@
 <script setup lang="ts">
+import { useFractalTheme } from "../composables/useFractalTheme";
 import { useFractalStore } from "../store/fractalStore";
 
 const store = useFractalStore();
 
-const getVarColor = (varName: string): string => {
-  const colors: Record<string, string> = {
-    seedX: "#55aaff",
-    seedY: "#55aaff",
-    power: "#ffaa00",
-    powerI: "#ffaa00",
-    juliaMorph: "#ff00aa",
-    memoryR: "#00ffaa",
-    memoryI: "#00ffaa",
-    maxIterations: "#ffffff",
-  };
-  return colors[varName] || "#646cff";
-};
+const { getVarColor } = useFractalTheme();
 
 const getBindings = (axis: "x" | "y") =>
   axis === "x" ? store.bindingsX : store.bindingsY;

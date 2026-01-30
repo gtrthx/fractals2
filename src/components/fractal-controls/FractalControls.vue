@@ -1,38 +1,39 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useFractalStore } from "../../store/fractalStore";
+import { useFractalTheme } from "../../composables/useFractalTheme";
 import SlidableValue from "../SlidableValue.vue";
 
+import { BASE_CONTROL_GROUPS } from "../../constants/ui/base-control-groups";
+import { FORMULAS } from "../../constants/formulas";
+import { DEFAULT_SLIDER_PARAMS } from "../../constants/ui/default-slider-params";
+
+import type { ControlGroup } from "../../types/control-group";
+import type { SliderSchema } from "../../types/slider-schema";
+import type { BaseFractalParams } from "../../types/base-fractal-params";
+
 const store = useFractalStore();
-const params = computed(() => store.sliderParams as any);
+const { colors, getColor, mathStyles } = useFractalTheme();
 
-const colors = {
-  seed: "#55aaff",
-  power: "#ffaa00",
-  morph: "#ff00aa",
-  memory: "#00ffaa",
-  iter: "#ffffff",
-};
+const activeControls = computed<ControlGroup[]>(() => {
+  const formula = FORMULAS.find((f) => f.id === store.currentFormulaId);
+  if (!formula) return [];
 
-const zStyle = computed(() => {
-  // z is the "Seed" in Mandelbrot (morph=0), "Coordinate" in Julia (morph=1)
-  // We want it to be Blue when it represents the Coordinate.
-  const ratio = store.sliderParams.juliaMorph;
-  return {
-    color: ratio > 0.5 ? colors.seed : "#ffffff",
-    opacity: ratio > 0.5 ? 1.0 : 0.6, // Slight dimming instead of 0.3
-    transition: "color 0.4s ease, opacity 0.4s ease",
+  const groups =
+    formula.customUI || BASE_CONTROL_GROUPS[formula.fractalType] || [];
+
+  const iterationGroup: ControlGroup = {
+    label: "Iterations",
+    colorKey: "iter",
+    sliders: [{ varName: "maxIterations" } as SliderSchema],
   };
+
+  return [...groups, iterationGroup];
 });
 
-const cStyle = computed(() => {
-  // c is the "Coordinate" in Mandelbrot (morph=0), "Seed" in Julia (morph=1)
-  const ratio = store.sliderParams.juliaMorph;
-  return {
-    color: ratio < 0.5 ? colors.seed : "#ffffff",
-    opacity: ratio < 0.5 ? 1.0 : 0.6,
-    transition: "color 0.4s ease, opacity 0.4s ease",
-  };
+const getSliderProps = (slider: SliderSchema) => ({
+  ...DEFAULT_SLIDER_PARAMS[slider.varName],
+  ...slider,
 });
 </script>
 
@@ -40,162 +41,138 @@ const cStyle = computed(() => {
   <div class="fractal-controls">
     <div id="formula-display">
       <template v-if="store.currentFormulaId === 'mandelbrot'">
-        <span :style="zStyle">z</span
-        ><sup :style="{ color: colors.power }">P</sup> +
-        <span :style="cStyle">c</span>
+        <span :style="mathStyles.z">z</span>
+        <sup :style="{ color: colors.power }">P</sup> +
+        <span :style="mathStyles.c">c</span>
       </template>
 
       <template v-else-if="store.currentFormulaId === 'burning-ship'">
-        (|Re(<span :style="zStyle">z</span>)| + i|Im(<span :style="zStyle"
+        (|Re(<span :style="mathStyles.z">z</span>)| + i|Im(<span
+          :style="mathStyles.z"
           >z</span
-        >)|)<sup :style="{ color: colors.power }">P</sup> +
-        <span :style="cStyle">c</span>
+        >)|) <sup :style="{ color: colors.power }">P</sup> +
+        <span :style="mathStyles.c">c</span>
       </template>
 
       <template v-else-if="store.currentFormulaId === 'tricorn'">
-        <span :style="zStyle">z̅</span
-        ><sup :style="{ color: colors.power }">P</sup> +
-        <span :style="cStyle">c</span>
+        <span :style="mathStyles.z">z̅</span>
+        <sup :style="{ color: colors.power }">P</sup> +
+        <span :style="mathStyles.c">c</span>
       </template>
 
       <template v-else-if="store.currentFormulaId === 'buffalo'">
-        |<span :style="zStyle">z</span
+        |<span :style="mathStyles.z">z</span
         ><sup :style="{ color: colors.power }">P</sup>| +
-        <span :style="cStyle">c</span>
+        <span :style="mathStyles.c">c</span>
       </template>
 
       <template v-else-if="store.currentFormulaId === 'celtic'">
-        |Re(<span :style="zStyle">z</span
+        |Re(<span :style="mathStyles.z">z</span
         ><sup :style="{ color: colors.power }">P</sup>)| + iIm(<span
-          :style="zStyle"
+          :style="mathStyles.z"
           >z</span
         ><sup :style="{ color: colors.power }">P</sup>) +
-        <span :style="cStyle">c</span>
+        <span :style="mathStyles.c">c</span>
       </template>
 
       <template v-else-if="store.currentFormulaId === 'magnet'">
-        ((<span :style="zStyle">z</span>² + <span :style="cStyle">c</span> - 1)
-        / (2<span :style="zStyle">z</span> + <span :style="cStyle">c</span> -
-        2))<sup :style="{ color: colors.power }">P</sup>
+        ((<span :style="mathStyles.z">z</span>² +
+        <span :style="mathStyles.c">c</span> - 1) / (2<span
+          :style="mathStyles.z"
+          >z</span
+        >
+        + <span :style="mathStyles.c">c</span> - 2))
+        <sup :style="{ color: colors.power }">P</sup>
       </template>
 
       <template v-else-if="store.currentFormulaId === 'inv-mandel'">
-        <span :style="zStyle">z</span
-        ><sup :style="{ color: colors.power }">P</sup> + 1/<span :style="cStyle"
-          >c</span
-        >
+        <span :style="mathStyles.z">z</span
+        ><sup :style="{ color: colors.power }">P</sup> + 1/
+        <span :style="mathStyles.c">c</span>
       </template>
 
       <template v-else-if="store.currentFormulaId === 'inv-exp'">
-        1/<span :style="zStyle">z</span
+        1/<span :style="mathStyles.z">z</span
         ><sup :style="{ color: colors.power }">P</sup> +
-        <span :style="cStyle">c</span>
+        <span :style="mathStyles.c">c</span>
       </template>
 
       <template v-else-if="store.currentFormulaId === 'lambda'">
-        <span :style="cStyle">c</span> · <span :style="zStyle">z</span>(1 -
-        <span :style="zStyle">z</span>)
+        <span :style="mathStyles.c">c</span> ·
+        <span :style="mathStyles.z">z</span>(1 -
+        <span :style="mathStyles.z">z</span>)
       </template>
 
       <template v-else-if="store.currentFormulaId === 'spider'">
-        <div
-          style="
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-          "
-        >
+        <div class="spider-layout">
           <div>
-            <span :style="zStyle">z</span
+            <span :style="mathStyles.z">z</span
             ><sup :style="{ color: colors.power }">P</sup> +
-            <span :style="cStyle">c</span>
+            <span :style="mathStyles.c">c</span>
           </div>
-          <div style="font-size: 0.6em; opacity: 0.6">
-            <span :style="cStyle">c</span> → <span :style="cStyle">c</span>/2 +
-            <span :style="zStyle">z</span>
+          <div class="sub-formula">
+            <span :style="mathStyles.c">c</span> →
+            <span :style="mathStyles.c">c</span>/2 +
+            <span :style="mathStyles.z">z</span>
           </div>
         </div>
       </template>
 
       <template v-else-if="store.currentFormulaId === 'heart'">
-        (|Re(<span :style="zStyle">z</span>)| + iIm(<span :style="zStyle"
+        (|Re(<span :style="mathStyles.z">z</span>)| + iIm(<span
+          :style="mathStyles.z"
           >z</span
-        >))<sup :style="{ color: colors.power }">P</sup> +
-        <span :style="cStyle">c</span>
+        >)) <sup :style="{ color: colors.power }">P</sup> +
+        <span :style="mathStyles.c">c</span>
+      </template>
+
+      <template v-if="store.currentFormulaId === 'newton-std'">
+        <span :style="mathStyles.z">z</span
+        ><sup :style="{ color: colors.power }">P</sup> - 1 = 0
+      </template>
+
+      <template v-else-if="store.currentFormulaId === 'newton-sin'">
+        <span :style="mathStyles.z">z</span> -
+        <span :style="{ color: colors.power }">a</span> · tan(<span
+          :style="mathStyles.z"
+          >z</span
+        >)
       </template>
     </div>
+  </div>
 
-    <div class="control-group">
-      <div class="label" :style="{ color: colors.power }">Power (P):</div>
-      <SlidableValue
-        v-model="params.power"
-        varName="power"
-        :color="colors.power"
-        :step="0.01"
-      />
-      <span :style="{ color: colors.power }">+</span>
-      <SlidableValue
-        v-model="params.powerI"
-        varName="powerI"
-        :color="colors.power"
-        :step="0.01"
-      />
-      <span :style="{ color: colors.power }">i</span>
-    </div>
+  <div class="controls-wrapper">
+    <div
+      v-for="group in activeControls"
+      :key="group.label"
+      class="control-group"
+    >
+      <div class="label" :style="{ color: getColor(group.colorKey) }">
+        {{ group.label }}:
+      </div>
 
-    <div class="control-group">
-      <div class="label" :style="{ color: colors.morph }">Julia Morph:</div>
-      <SlidableValue
-        v-model="params.juliaMorph"
-        varName="juliaMorph"
-        :color="colors.morph"
-        :step="0.01"
-      />
-    </div>
+      <template v-for="slider in group.sliders" :key="slider.varName">
+        <span
+          v-if="slider.showPlus"
+          :style="{ color: getColor(group.colorKey) }"
+          >+</span
+        >
 
-    <div class="control-group">
-      <div class="label" :style="{ color: colors.seed }">Seed Offset:</div>
-      <SlidableValue
-        v-model="params.seedX"
-        varName="seedX"
-        :color="colors.seed"
-      />
-      <span :style="{ color: colors.seed }">+</span>
-      <SlidableValue
-        v-model="params.seedY"
-        varName="seedY"
-        :color="colors.seed"
-      />
-      <span :style="{ color: colors.seed }">i</span>
-    </div>
+        <SlidableValue
+          v-model="
+            store.sliderParams[slider.varName as keyof BaseFractalParams]
+          "
+          :varName="slider.varName"
+          :color="getColor(group.colorKey)"
+          :step="getSliderProps(slider).step"
+          :min="getSliderProps(slider).min"
+          :max="getSliderProps(slider).max"
+        />
 
-    <hr class="divider" />
-
-    <div class="control-group">
-      <div class="label" :style="{ color: colors.memory }">Memory (zₙ₋₁):</div>
-      <SlidableValue
-        v-model="params.memoryR"
-        varName="memoryR"
-        :color="colors.memory"
-      />
-      <span :style="{ color: colors.memory }">+</span>
-      <SlidableValue
-        v-model="params.memoryI"
-        varName="memoryI"
-        :color="colors.memory"
-      />
-      <span :style="{ color: colors.memory }">i</span>
-    </div>
-
-    <div class="control-group">
-      <div class="label">Iterations:</div>
-      <SlidableValue
-        v-model="params.maxIterations"
-        varName="maxIterations"
-        :step="1"
-        color="#fff"
-      />
+        <span v-if="slider.suffix" :style="{ color: getColor(group.colorKey) }">
+          {{ slider.suffix }}
+        </span>
+      </template>
     </div>
   </div>
 </template>
@@ -217,6 +194,25 @@ const cStyle = computed(() => {
   border-radius: 8px;
   margin-bottom: 10px;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  user-select: none;
+}
+
+.spider-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.sub-formula {
+  font-size: 0.6em;
+  opacity: 0.6;
+}
+
+.controls-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .control-group {
