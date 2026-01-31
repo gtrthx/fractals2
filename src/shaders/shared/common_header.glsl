@@ -15,6 +15,8 @@ uniform float subtrahend;
 uniform float subtrahendI;
 uniform float power;
 uniform float powerI;
+uniform float powerSecondary;
+uniform float powerSecondaryI;
 uniform float relaxation;
 uniform float relaxationI;
 uniform float seedX;

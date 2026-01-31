@@ -60,8 +60,8 @@ const handleWellClick = (axis: "x" | "y") => {
 <style scoped>
 .axis-container {
   display: flex;
-  gap: 12px;
-  padding: 10px;
+  gap: 10px;
+  margin-top: 10px;
 }
 
 .axis-well {

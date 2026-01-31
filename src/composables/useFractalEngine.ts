@@ -6,6 +6,7 @@ import complexMath from "../shaders/shared/complex_math.glsl?raw";
 import commonHeader from "../shaders/shared/common_header.glsl?raw";
 import escapeEngine from "../shaders/engines/escape_engine.glsl?raw";
 import newtonEngine from "../shaders/engines/newton_engine.glsl?raw";
+import novaEngine from "../shaders/engines/nova_engine.glsl?raw";
 
 import { processShader } from "../utils/shaderLoader";
 import { FORMULAS } from "../constants/formulas";
@@ -18,6 +19,7 @@ const shaderLibrary = {
   common_header: commonHeader,
   escape_engine: escapeEngine,
   newton_engine: newtonEngine,
+  nova_engine: novaEngine,
 };
 
 export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {

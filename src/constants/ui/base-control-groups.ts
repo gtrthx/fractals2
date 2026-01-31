@@ -3,14 +3,6 @@ import type { ControlGroup } from "../../types/ui";
 export const BASE_CONTROL_GROUPS: Record<string, ControlGroup[]> = {
   escape: [
     {
-      label: "Power (P)",
-      colorKey: "power",
-      sliders: [
-        { paramKey: "power" },
-        { paramKey: "powerI", suffix: "i", showPlus: true },
-      ],
-    },
-    {
       label: "Julia Morph",
       colorKey: "morph",
       sliders: [{ paramKey: "juliaMorph" }],
@@ -24,6 +16,14 @@ export const BASE_CONTROL_GROUPS: Record<string, ControlGroup[]> = {
       ],
     },
     {
+      label: "Power",
+      colorKey: "power",
+      sliders: [
+        { paramKey: "power" },
+        { paramKey: "powerI", suffix: "i", showPlus: true },
+      ],
+    },
+    {
       label: "Memory (zₙ₋₁)",
       colorKey: "memory",
       sliders: [
@@ -33,6 +33,14 @@ export const BASE_CONTROL_GROUPS: Record<string, ControlGroup[]> = {
     },
   ],
   newton: [
+    {
+      label: "Power (P)",
+      colorKey: "power",
+      sliders: [
+        { paramKey: "power" },
+        { paramKey: "powerI", suffix: "i", showPlus: true },
+      ],
+    },
     {
       label: "Relaxation (a)",
       colorKey: "relaxation",
@@ -55,6 +63,52 @@ export const BASE_CONTROL_GROUPS: Record<string, ControlGroup[]> = {
       sliders: [
         { paramKey: "subtrahend" },
         { paramKey: "subtrahendI", suffix: "i", showPlus: true },
+      ],
+    },
+  ],
+  nova: [
+    {
+      label: "Power (P)",
+      colorKey: "power",
+      sliders: [
+        { paramKey: "power" },
+        { paramKey: "powerI", suffix: "i", showPlus: true },
+      ],
+    },
+    {
+      label: "Relaxation (a)",
+      colorKey: "relaxation",
+      sliders: [
+        { paramKey: "relaxation" },
+        { paramKey: "relaxationI", suffix: "i", showPlus: true },
+      ],
+    },
+    {
+      label: "Subtrahend (s)",
+      colorKey: "subtrahend",
+      sliders: [
+        { paramKey: "subtrahend" },
+        { paramKey: "subtrahendI", suffix: "i", showPlus: true },
+      ],
+    },
+    {
+      label: "Nova Constant (c)",
+      colorKey: "seed",
+      sliders: [
+        { paramKey: "seedX" },
+        { paramKey: "seedY", suffix: "i", showPlus: true },
+      ],
+    },
+    {
+      label: "Julia Morph",
+      colorKey: "juliaMorph",
+      sliders: [
+        {
+          paramKey: "juliaMorph",
+          min: 0.0,
+          max: 1.0,
+          step: 0.01,
+        },
       ],
     },
   ],

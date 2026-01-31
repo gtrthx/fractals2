@@ -57,8 +57,8 @@ const availableFormulas = computed(() => {
 
       <div class="footer-actions">
         <PaletteSelector />
-        <div class="btn-row">
-          <button @click="viewStore.resetView" class="reset-btn">⟲</button>
+        <div class="button-row">
+          <button @click="viewStore.resetView" class="button-primary">⟲</button>
           <FractalRandomizer />
         </div>
         <!-- <PresetGallery /> -->
@@ -200,18 +200,8 @@ h1 {
   opacity: 0.9;
 }
 
-.reset-btn {
-  background: none;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  cursor: pointer;
-  border-radius: 4px;
-  padding: 2px 8px;
-  margin-top: 10px;
-  transition: all 0.2s;
-}
-.reset-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: #646cff;
+.button-row {
+  display: flex;
+  gap: 8px;
 }
 </style>

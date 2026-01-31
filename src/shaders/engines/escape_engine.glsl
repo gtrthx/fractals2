@@ -14,7 +14,7 @@ vec3 get_fractal_color(vec2 uv) {
   for (float i = 0.0; i < 1000.0; i++) {
     if (i >= maxIterations) break;
 
-    vec2 zNext = fractalStep(z, c, p, zPrev, i);
+    vec2 zNext = fractalStep(z, c, p, zPrev);
 
     if (i > 0.0) {
       zNext += complexMul(zPrev, memFactor);

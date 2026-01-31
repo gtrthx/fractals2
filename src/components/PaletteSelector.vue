@@ -52,7 +52,7 @@ const isDropdownExpanded = ref(false);
     </div>
 
     <button
-      class="dice-button"
+      class="button-primary"
       title="Randomize Colors"
       @click="paletteStore.generateRandomPalette"
     >
@@ -162,29 +162,5 @@ const isDropdownExpanded = ref(false);
 .fade-leave-to {
   opacity: 0;
   transform: translateY(-10px);
-}
-
-.dice-button {
-  width: 32px;
-  height: 32px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  transition: all 0.2s;
-}
-
-.dice-button:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: rotate(15deg);
-}
-
-.dice-button:active {
-  transform: scale(0.9);
 }
 </style>

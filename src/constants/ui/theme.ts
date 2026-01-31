@@ -5,7 +5,7 @@ export const UI_COLORS = {
   memory: "#00ffaa",
   iter: "#ffffff",
   default: "#646cff",
-  relaxation: "#646cff",
+  relaxation: "#ff00aa",
   subtrahend: "#646cff",
 } as const;
 

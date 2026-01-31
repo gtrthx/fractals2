@@ -11,6 +11,11 @@ import heartRaw from "../shaders/formulas/escape/heart.frag?raw";
 import lambdaRaw from "../shaders/formulas/escape/lambda.frag?raw";
 import newtonStdRaw from "../shaders/formulas/newton/newton_std.frag?raw";
 import newtonSinRaw from "../shaders/formulas/newton/newton_sin.frag?raw";
+import newtonExpRaw from "../shaders/formulas/newton/newton_exp.frag?raw";
+import newtonHybridRaw from "../shaders/formulas/newton/newton_hybrid.frag?raw";
+import novaStdRaw from "../shaders/formulas/nova/nova_std.frag?raw";
+import novaSinRaw from "../shaders/formulas/nova/nova_sin.frag?raw";
+import novaHybridRaw from "../shaders/formulas/nova/nova_hybrid.frag?raw";
 import type { FormulaDefinition } from "../types/ui";
 
 export const FORMULAS: FormulaDefinition[] = [
@@ -127,5 +132,76 @@ export const FORMULAS: FormulaDefinition[] = [
     displayString: "zₙ₊₁ = z - a·tan(z)",
     shaderSource: newtonSinRaw,
     defaults: { zoom: 5.0, offsetShiftX: 0.0, power: 1.0, subtrahend: 0.0 },
+  },
+  {
+    id: "newton-exp",
+    name: "Newton Exponential",
+    fractalType: "newton",
+    displayString: "eᴾᶻ - c = 0",
+    shaderSource: newtonExpRaw,
+    defaults: {
+      zoom: 4.0,
+      offsetShiftX: 0.0,
+      power: 1.0,
+      subtrahend: 1.0,
+      relaxation: 1.0,
+    },
+  },
+  {
+    id: "newton-hybrid",
+    name: "Newton Hybrid",
+    fractalType: "newton",
+    displayString: "zᴾ · sin(z) - c = 0",
+    shaderSource: newtonHybridRaw,
+    defaults: {
+      zoom: 5.0,
+      power: 2.0,
+      subtrahend: 1.0,
+      relaxation: 1.0,
+    },
+  },
+  {
+    id: "nova-std",
+    name: "Nova Standard",
+    fractalType: "nova",
+    displayString: "zₙ₊₁ = zₙ - a(zᴾ-s)/Pzᴾ⁻¹ + c",
+    shaderSource: novaStdRaw,
+    defaults: {
+      zoom: 4.0,
+      power: 3.0,
+      seedX: 1.0,
+      subtrahend: 1.0,
+      relaxation: 1.0,
+      juliaMorph: 0.0,
+    },
+  },
+  {
+    id: "nova-sin",
+    name: "Nova Sine",
+    fractalType: "nova",
+    displayString: "zₙ₊₁ = zₙ - α(sin(P·zₙ) - S) / (P·cos(P·zₙ)) + c",
+    shaderSource: novaSinRaw,
+    defaults: {
+      zoom: 4.0,
+      power: 3.0,
+      seedX: 1.0,
+      subtrahend: 1.0,
+      relaxation: 1.0,
+      juliaMorph: 0.0,
+    },
+  },
+  {
+    id: "nova-hybrid",
+    name: "Nova Hybrid",
+    fractalType: "nova",
+    displayString: "zₙ₊₁ = zₙ - a(zᴾ sin z - s)/f' + c",
+    shaderSource: novaHybridRaw,
+    defaults: {
+      zoom: 6.0,
+      power: 2.0,
+      subtrahend: 1.0,
+      relaxation: 1.0,
+      juliaMorph: 0.0,
+    },
   },
 ];

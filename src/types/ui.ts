@@ -37,5 +37,7 @@ export interface FormulaDefinition {
     subtrahend?: number;
     juliaMorph?: number;
     memoryR?: number;
+    seedX?: number;
+    relaxation?: number;
   };
 }

@@ -21,7 +21,7 @@ vec3 get_newton_color(vec2 uv) {
 
     // 1. Calculate the standard Newton Step
     // We pass 'subtrahend' into the step (e.g., z^p - subtrahend = 0)
-    vec2 step = fractalStep(z, vec2(subtrahend, subtrahendI), p, zPrev, i);
+    vec2 step = fractalStep(z, vec2(subtrahend, subtrahendI), p, zPrev);
 
     // 2. Apply Relaxation + Step + Memory
     // relaxation.x acts as the complex 'a' multiplier for the Newton step

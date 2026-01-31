@@ -40,6 +40,21 @@ vec2 complexTan(vec2 z) {
   return complexDiv(complexSin(z), complexCos(z));
 }
 
+vec2 complexSinh(vec2 z) {
+  // sinh(x + iy) = sinh(x)cos(y) + i cosh(x)sin(y)
+  return vec2(sinh(z.x) * cos(z.y), cosh(z.x) * sin(z.y));
+}
+
+vec2 complexCosh(vec2 z) {
+  // cosh(x + iy) = cosh(x)cos(y) + i sinh(x)sin(y)
+  return vec2(cosh(z.x) * cos(z.y), sinh(z.x) * sin(z.y));
+}
+
+vec2 complexTanh(vec2 z) {
+  // tanh(z) = sinh(z) / cosh(z)
+  return complexDiv(complexSinh(z), complexCosh(z));
+}
+
 // --- Logarithm & Exponential ---
 vec2 complexExp(vec2 z) {
   // e^(x+iy) = e^x * (cos(y) + i sin(y))
