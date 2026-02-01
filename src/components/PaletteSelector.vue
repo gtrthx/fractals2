@@ -35,7 +35,10 @@ const isDropdownExpanded = ref(false);
                   !paletteStore.isRandom && paletteStore.currentIndex === index,
               }"
               :style="{ background: getPaletteCSS(p) }"
-              @click="paletteStore.setPaletteByIndex(index)"
+              @click="
+                paletteStore.setPaletteByIndex(index);
+                isDropdownExpanded = false;
+              "
             >
               <div
                 v-if="
@@ -114,7 +117,6 @@ const isDropdownExpanded = ref(false);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
 }
 
-/* 4-Column Grid */
 .palette-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -151,7 +153,6 @@ const isDropdownExpanded = ref(false);
   font-size: 12px;
 }
 
-/* Simple Transition */
 .fade-enter-active,
 .fade-leave-active {
   transition:

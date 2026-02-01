@@ -15,9 +15,6 @@ const fractalStore = useFractalStore();
 const inputStore = useInputStore();
 const { getColor } = useFractalTheme();
 
-/**
- * Determines which control groups to show based on the current formula.
- */
 const activeControls = computed<ControlGroup[]>(() => {
   const formula = FORMULAS.find((f) => f.id === fractalStore.formulaId);
   if (!formula) return [];
@@ -34,19 +31,11 @@ const activeControls = computed<ControlGroup[]>(() => {
   return [...groups, iterationGroup];
 });
 
-/**
- * Merges default constraints (min/max/step) with slider-specific overrides.
- */
 const getSliderProps = (slider: SliderSchema) => ({
   ...DEFAULT_SLIDER_CONSTRAINTS[slider.paramKey],
   ...slider,
 });
 
-/**
- * Binds the group to the mouse.
- * If 1 slider: X-axis.
- * If 2+ sliders: 1st to X, 2nd to Y.
- */
 const handleGroupLabelClick = (group: ControlGroup) => {
   const sliders = group.sliders;
   if (!sliders.length) return;
@@ -63,9 +52,6 @@ const handleGroupLabelClick = (group: ControlGroup) => {
   }
 };
 
-/**
- * Returns true if any slider in the group is currently controlled by the mouse.
- */
 const isGroupBound = (group: ControlGroup) => {
   return group.sliders.some((s) => inputStore.isParamBound(s.paramKey));
 };

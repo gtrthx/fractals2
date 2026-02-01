@@ -11,7 +11,6 @@ export const UI_COLORS = {
 
 export type ColorKey = keyof typeof UI_COLORS;
 
-// Map specific variable names to their visual group
 export const VAR_COLOR_MAP: Record<string, ColorKey> = {
   seedX: "seed",
   seedY: "seed",

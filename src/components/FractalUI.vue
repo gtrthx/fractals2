@@ -7,6 +7,7 @@ import { computed } from "vue";
 import { FORMULAS } from "../constants/formulas";
 import FractalControls from "./fractal-controls/FractalControls.vue";
 import { useViewStore } from "../store/useViewStore";
+import MemoryMode from "./fractal-controls/MemoryMode.vue";
 
 const fractalStore = useFractalStore();
 const viewStore = useViewStore();
@@ -55,6 +56,7 @@ const availableFormulas = computed(() => {
 
       <InputAxisBindings />
 
+      <MemoryMode />
       <div class="footer-actions">
         <PaletteSelector />
         <div class="button-row">
@@ -163,11 +165,11 @@ const availableFormulas = computed(() => {
   content: "▼";
   font-size: 12px;
   position: absolute;
-  right: 12px; /* Adjust this to move the arrow */
+  right: 12px;
   top: 18px;
   transform: translateY(-50%);
   color: #888;
-  pointer-events: none; /* Crucial so clicks pass through to the select */
+  pointer-events: none;
 }
 
 .formula-selector-container:hover::after {

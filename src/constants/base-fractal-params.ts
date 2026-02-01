@@ -1,7 +1,7 @@
 import type { FractalParams } from "../types/fractal";
 
 export const DEFAULT_FRACTAL_PARAMS: FractalParams = {
-  maxIterations: 100,
+  maxIterations: 300,
   power: 2.0,
   powerI: 0.0,
   seedX: 0.0,

@@ -8,10 +8,6 @@ const { getVarColor } = useFractalTheme();
 const getBindings = (axis: "x" | "y") =>
   axis === "x" ? inputStore.bindings.x : inputStore.bindings.y;
 
-/**
- * Explicit toggle helper to ensure we don't
- * trigger parent clicks when clicking pills.
- */
 const handleWellClick = (axis: "x" | "y") => {
   inputStore.toggleTargetAxis(axis);
 };
@@ -82,10 +78,9 @@ const handleWellClick = (axis: "x" | "y") => {
   border-color: rgba(255, 255, 255, 0.2);
 }
 
-/* The "Binding Mode" active state */
 .axis-well.is-active {
   background: rgba(255, 255, 255, 0.12);
-  border-color: #646cff; /* Or your theme primary color */
+  border-color: #646cff;
   box-shadow: 0 0 15px rgba(100, 108, 255, 0.3);
 }
 

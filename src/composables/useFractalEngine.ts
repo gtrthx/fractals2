@@ -49,13 +49,16 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
     ...Object.keys(DEFAULT_FRACTAL_PARAMS),
   ];
 
+  const programCache: Map<string, WebGLProgram> = new Map();
+
   const createProgram = (fragSource: string): WebGLProgram => {
     const createShader = (type: number, source: string): WebGLShader => {
       const shader = gl.createShader(type)!;
       gl.shaderSource(shader, source);
       gl.compileShader(shader);
       if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        throw new Error(`Shader error: ${gl.getShaderInfoLog(shader)}`);
+        const info = gl.getShaderInfoLog(shader);
+        throw new Error(`Shader error: ${info}`);
       }
       return shader;
     };
@@ -67,33 +70,43 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
     return prog;
   };
 
-  const switchProgram = (id: string) => {
-    const prog = programs.get(id);
-    if (!prog) {
-      console.error(`Program not found for ID: ${id}`);
-      return;
+  const updateActiveShader = () => {
+    const formulaId = fractalStore.formulaId;
+    const mode = fractalStore.memoryMode || "NONE"; // Ensure this exists in store
+    const cacheKey = `${formulaId}_${mode}`;
+
+    // 1. Check if we already have this specific combination
+    if (programCache.has(cacheKey)) {
+      activeProgram = programCache.get(cacheKey)!;
+    } else {
+      // 2. Recompile on the fly
+      const formula = FORMULAS.find((f) => f.id === formulaId);
+      if (!formula) return;
+
+      const originalSource = processShader(formula.shaderSource, shaderLibrary);
+      const injectedSource = `#define MEM_${mode}\n${originalSource}`;
+
+      try {
+        const newProg = createProgram(injectedSource);
+        programCache.set(cacheKey, newProg);
+        activeProgram = newProg;
+        console.log(`Successfully recompiled: ${cacheKey}`);
+      } catch (e) {
+        console.error("Recompilation failed:", e);
+        return;
+      }
     }
 
-    activeProgram = prog;
+    // 3. Set the program and refresh uniform locations
     gl.useProgram(activeProgram);
-
-    // Re-map uniform locations for the new program
     uniformNames.forEach((name) => {
-      uniformLocations[name] = gl.getUniformLocation(activeProgram, name);
+      uniformLocations[name] = gl.getUniformLocation(activeProgram!, name);
     });
   };
 
   const init = () => {
     if (!canvasRef.value) return;
     gl = canvasRef.value.getContext("webgl")!;
-
-    FORMULAS.forEach((formula) => {
-      const processedSource = processShader(
-        formula.shaderSource,
-        shaderLibrary,
-      );
-      programs.set(formula.id, createProgram(processedSource));
-    });
 
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -103,16 +116,13 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
       gl.STATIC_DRAW,
     );
 
-    switchProgram(fractalStore.formulaId);
+    updateActiveShader();
     render();
   };
 
-  watch(
-    () => fractalStore.formulaId,
-    (newId) => {
-      switchProgram(newId);
-    },
-  );
+  watch([() => fractalStore.formulaId, () => fractalStore.memoryMode], () => {
+    updateActiveShader();
+  });
 
   const render = () => {
     if (!gl || !activeProgram) return;
@@ -174,7 +184,10 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
     animationFrameId = requestAnimationFrame(render);
   };
 
-  onMounted(init);
+  onMounted(() => {
+    init();
+    fractalStore.switchFractalType("escape");
+  });
   onUnmounted(() => {
     if (animationFrameId) cancelAnimationFrame(animationFrameId);
   });

@@ -5,7 +5,6 @@ vec3 get_newton_color(vec2 uv) {
   vec2 z = mix(coord, seed, juliaMorph);
   vec2 p = vec2(power, powerI);
 
-  // Memory/Inertia Setup
   vec2 memFactor = vec2(memoryR, memoryI);
   vec2 zPrev = z;
 

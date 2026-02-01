@@ -35,3 +35,20 @@ export interface Preset extends FractalState {
   name: string;
   description?: string;
 }
+
+export type MemoryMode =
+  | "NONE"
+  | "ABS_BOTH"
+  | "ABS_X"
+  | "ABS_Y"
+  | "CONJUGATE"
+  | "REVERSE"
+  | "INVERT"
+  | "SIN"
+  | "COS"
+  | "TAN"
+  | "EXP"
+  | "RECIPROCAL"
+  | "POW3"
+  | "FOLD"
+  | "SWIZZLE";

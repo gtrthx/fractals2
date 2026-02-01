@@ -36,13 +36,11 @@ useMouseInteraction(canvasRef);
   overflow: hidden;
 }
 
-/* Change the cursor globally when selecting a target */
 .app-container.selecting-x,
 .app-container.selecting-y {
   cursor: crosshair !important;
 }
 
-/* Optional: Make the formula look "High-Voltage" when picking */
 .app-container.selecting-x #formula-display,
 .app-container.selecting-y #formula-display {
   background: rgba(100, 108, 255, 0.05);

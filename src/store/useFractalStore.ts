@@ -9,6 +9,7 @@ export const useFractalStore = defineStore("fractal", {
   state: () => ({
     currentType: "escape" as FractalType,
     formulaId: "mandelbrot",
+    memoryMode: "NONE",
     params: {
       slider: { ...DEFAULT_FRACTAL_PARAMS } as FractalParams, // What the UI shows
       live: { ...DEFAULT_FRACTAL_PARAMS }, // What the Shader sees (smoothed)
@@ -44,9 +45,10 @@ export const useFractalStore = defineStore("fractal", {
       const { zoom, offsetShiftX, offsetShiftY, ...mathParams } =
         formula.defaults;
       const merged = { ...DEFAULT_FRACTAL_PARAMS, ...mathParams };
-      this.params.slider = { ...merged };
-      this.params.initial = { ...merged };
-      this.params.live = { ...merged };
+      // TODO
+      // this.params.slider = { ...merged };
+      // this.params.initial = { ...merged };
+      // this.params.live = { ...merged };
 
       if (zoom !== undefined) viewStore.zoom = zoom;
       if (offsetShiftX !== undefined) viewStore.offset.x = offsetShiftX;

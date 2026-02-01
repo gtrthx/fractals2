@@ -65,22 +65,19 @@ export const useInputStore = defineStore("interaction", {
     }) {
       const { x, y } = params;
 
-      // Check if everything provided is already bound to the correct axis
       const xBound = x ? this.bindings.x.includes(x) : true;
       const yBound = y ? this.bindings.y.includes(y) : true;
 
       if (xBound && yBound) {
-        // Everything is already bound? UNBIND ALL in this group
         if (x) this.unbindVariable(x, "x");
         if (y) this.unbindVariable(y, "y");
       } else {
-        // Something is missing? BIND ALL to their target axes
         if (x) {
-          this.unbindVariable(x, "y"); // Clean up cross-bindings
+          this.unbindVariable(x, "y");
           if (!this.bindings.x.includes(x)) this.bindings.x.push(x);
         }
         if (y) {
-          this.unbindVariable(y, "x"); // Clean up cross-bindings
+          this.unbindVariable(y, "x");
           if (!this.bindings.y.includes(y)) this.bindings.y.push(y);
         }
       }
