@@ -157,7 +157,9 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
       if (!loc) return;
 
       const baseVal = fractalStore.params.slider[key];
-      const sens = key.toLowerCase().includes("power") ? 0.3 : 1.0;
+      const sens =
+        (key.toLowerCase().includes("power") ? 0.3 : 1.0) *
+        inputStore.intensity;
 
       let liveVal = baseVal;
       if (inputStore.bindings.x.includes(key))

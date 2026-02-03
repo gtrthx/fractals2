@@ -4,6 +4,7 @@ import { FORMULAS } from "../constants/formulas";
 import { DEFAULT_FRACTAL_PARAMS } from "../constants/base-fractal-params";
 import { useViewStore } from "./useViewStore";
 import type { FractalType, FractalParams, MemoryMode } from "../types/fractal";
+import { useInputStore } from "./useInputStore";
 
 export const useFractalStore = defineStore("fractal", {
   state: () => ({
@@ -80,6 +81,8 @@ export const useFractalStore = defineStore("fractal", {
       this.params.anchor = { ...this.params.slider };
     },
     randomizeParams() {
+      const inputStore = useInputStore();
+
       const targetValues: Partial<FractalParams> = {};
       const keys = Object.keys(this.params.slider) as (keyof FractalParams)[];
 
@@ -88,7 +91,7 @@ export const useFractalStore = defineStore("fractal", {
 
         const baseVal = this.params.anchor[key] as number;
 
-        const offset = Math.random() / 2 - 0.25;
+        const offset = (Math.random() - 0.5) * inputStore.intensity;
         targetValues[key] = baseVal + offset;
       });
 

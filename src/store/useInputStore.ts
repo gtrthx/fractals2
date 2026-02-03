@@ -12,6 +12,7 @@ export const useInputStore = defineStore("interaction", {
       smoothedX: 0,
       smoothedY: 0,
     },
+    intensity: 1.0,
     activeAxis: null as "x" | "y" | null,
     bindings: {
       x: ["seedR"],
@@ -29,6 +30,10 @@ export const useInputStore = defineStore("interaction", {
         this.mouse.inputX = x;
         this.mouse.inputY = y;
       }
+    },
+
+    setIntensity(val: number) {
+      this.intensity = val;
     },
 
     tickSmoothing() {

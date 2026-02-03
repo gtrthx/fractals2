@@ -9,8 +9,11 @@ import FractalControls from "./fractal-controls/FractalControls.vue";
 import { useViewStore } from "../store/useViewStore";
 import MemoryMode from "./fractal-controls/MemoryMode.vue";
 import PresetGallery from "./fractal-controls/PresetGallery.vue";
+import BaseSlider from "./fractal-controls/BaseSlider.vue";
+import { useInputStore } from "../store/useInputStore";
 
 const fractalStore = useFractalStore();
+const inputStore = useInputStore();
 const viewStore = useViewStore();
 const availableFormulas = computed(() => {
   return FORMULAS.filter((f) => f.fractalType === fractalStore.currentType);
@@ -56,6 +59,11 @@ const availableFormulas = computed(() => {
       <FractalControls></FractalControls>
 
       <InputAxisBindings />
+
+      <div class="intensity-row">
+        <div class="intensity-label">Intensity</div>
+        <BaseSlider v-model="inputStore.intensity" default-value="1.0" />
+      </div>
 
       <MemoryMode />
 
@@ -146,6 +154,25 @@ const availableFormulas = computed(() => {
 
 .close-ui-btn:hover .icon {
   transform: translateX(-2px);
+}
+
+.intensity-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 4px;
+  transition: background-color 0.2s ease;
+  border-radius: 4px;
+}
+
+.intensity-label {
+  width: 110px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.8;
+  user-select: none;
 }
 
 .fractal-selector {

@@ -34,7 +34,7 @@ export const FORMULAS: FormulaDefinition[] = [
     //   },
     // ],
     zoom: 2.5,
-    offsetShiftX: 0.0,
+    offsetShiftX: -1.0,
     offsetShiftY: 0.0,
   },
   {

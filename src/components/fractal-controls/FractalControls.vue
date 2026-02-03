@@ -3,13 +3,13 @@ import { computed } from "vue";
 import { useFractalStore } from "../../store/useFractalStore";
 import { useInputStore } from "../../store/useInputStore";
 import { useFractalTheme } from "../../composables/useFractalTheme";
-import BaseSlider from "./BaseSlider.vue";
 import FormulaDisplay from "./FormulaDisplay.vue";
 
 import { BASE_CONTROL_GROUPS } from "../../constants/ui/base-control-groups";
 import { FORMULAS } from "../../constants/formulas";
 import { BASE_SLIDER_CONSTRAINTS } from "../../constants/ui/base-slider-constraints";
 import type { ControlGroup, SliderSchema } from "../../types/ui";
+import ParamSlider from "./ParamSlider.vue";
 
 const fractalStore = useFractalStore();
 const inputStore = useInputStore();
@@ -86,7 +86,7 @@ const isGroupBound = (group: ControlGroup) => {
               >+</span
             >
 
-            <BaseSlider
+            <ParamSlider
               v-model="fractalStore.params.slider[slider.paramKey]"
               :paramKey="slider.paramKey"
               :color="getColor(group.colorKey)"

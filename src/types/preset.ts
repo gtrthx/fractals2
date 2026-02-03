@@ -8,6 +8,7 @@ export interface Preset {
   memoryMode: MemoryMode;
   fractalParams: FractalParams;
   bindings: PointerBindings;
+  intensity: number;
   zoom: number;
   offset: { x: number; y: number };
   palette: Palette;

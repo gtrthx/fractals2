@@ -32,6 +32,7 @@ export const usePresetStore = defineStore("presets", () => {
       memoryMode: fractalStore.memoryMode,
       fractalParams: { ...fractalStore.params.slider },
       bindings: JSON.parse(JSON.stringify(inputStore.bindings)),
+      intensity: inputStore.intensity,
       zoom: viewStore.zoom,
       offset: { x: viewStore.offset.x, y: viewStore.offset.y },
       palette: JSON.parse(JSON.stringify(paletteStore.selectedPalette)),

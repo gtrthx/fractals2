@@ -1,14 +1,21 @@
 <script setup lang="ts">
-import { onUnmounted, ref, watch } from "vue";
+import { computed, onUnmounted, ref, watch } from "vue";
 import gsap from "gsap";
+import { useFractalStore } from "../../store/useFractalStore";
+import { useInputStore } from "../../store/useInputStore";
+import type { FractalParams } from "../../types/fractal";
 
 const props = defineProps<{
   modelValue: number;
-  step?: number;
-  color?: string;
-  defaultValue?: string;
+  step: number;
+  min: number;
+  max: number;
+  color: string;
+  paramKey: keyof FractalParams;
 }>();
 
+const fractalStore = useFractalStore();
+const inputStore = useInputStore();
 const emit = defineEmits(["update:modelValue", "change"]);
 const isDragging = ref(false);
 
@@ -26,16 +33,27 @@ watch(
 let startX = 0;
 let startValue = 0;
 
+const currentValue = computed(() => {
+  const key = props.paramKey;
+  return fractalStore.params.live[key];
+});
+
 const handleClick = (e: MouseEvent) => {
-  startDrag(e);
+  if (inputStore.activeAxis) {
+    inputStore.bindVariable(props.paramKey);
+  } else {
+    startDrag(e);
+  }
 };
 
 const handleReset = (e: MouseEvent) => {
   e.stopPropagation();
-  if (props.defaultValue === undefined) return;
+  const defaultValue = fractalStore.params.initial[props.paramKey];
+
+  if (defaultValue === undefined) return;
 
   gsap.to(tweenTarget, {
-    val: props.defaultValue,
+    val: defaultValue,
     duration: 0.5,
     onUpdate: () => emit("update:modelValue", tweenTarget.val),
   });
@@ -53,7 +71,7 @@ const startDrag = (e: MouseEvent) => {
 
 const onDrag = (e: MouseEvent) => {
   const sensitivity = props.step || 0.01;
-  const delta = (e.clientX - startX) * sensitivity;
+  const delta = (e.clientX - startX) * sensitivity * inputStore.intensity;
 
   // 1. Calculate the "raw" target value based on mouse movement
   let targetVal = startValue + delta;
@@ -77,8 +95,8 @@ const onDrag = (e: MouseEvent) => {
   }
 
   // 3. Clamp to boundaries
-  // if (props.min !== undefined) targetVal = Math.max(props.min, targetVal);
-  // if (props.max !== undefined) targetVal = Math.min(props.max, targetVal);
+  if (props.min !== undefined) targetVal = Math.max(props.min, targetVal);
+  if (props.max !== undefined) targetVal = Math.min(props.max, targetVal);
 
   gsap.to(tweenTarget, {
     val: targetVal,
@@ -110,12 +128,13 @@ onUnmounted(() => {
     class="slidable-number"
     :class="{
       'is-dragging': isDragging,
+      'is-pickable': inputStore.activeAxis !== null,
     }"
     :style="{ color: color || '#646cff' }"
     @mousedown="handleClick"
     @dblclick="handleReset"
   >
-    {{ modelValue?.toFixed(2) ?? "0.00" }}
+    {{ currentValue?.toFixed(2) ?? "0.00" }}
   </span>
 </template>
 
@@ -140,5 +159,23 @@ onUnmounted(() => {
 .is-dragging {
   background: rgba(100, 108, 255, 0.4);
   border-bottom-style: solid;
+}
+
+.is-pickable {
+  cursor: cell !important;
+  outline: 2px dashed rgba(255, 255, 255, 0.5);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 </style>
