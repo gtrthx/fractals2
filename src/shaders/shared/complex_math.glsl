@@ -26,6 +26,14 @@ vec2 complexPower(vec2 z, vec2 p) {
   return mag * vec2(cos(ang), sin(ang));
 }
 
+// Use, when power is just a float
+vec2 zPowFloat(vec2 z, float p) {
+  float r = length(z);
+  if (r == 0.0) return vec2(0.0);
+  float theta = atan(z.y, z.x);
+  return pow(r, p) * vec2(cos(p * theta), sin(p * theta));
+}
+
 // --- Trigonometric & Hyperbolic ---
 vec2 complexSin(vec2 z) {
   return vec2(sin(z.x) * cosh(z.y), cos(z.x) * sinh(z.y));
@@ -36,8 +44,10 @@ vec2 complexCos(vec2 z) {
 }
 
 vec2 complexTan(vec2 z) {
-  // tan(z) = sin(z)/cos(z)
-  return complexDiv(complexSin(z), complexCos(z));
+  float x2 = 2.0 * z.x;
+  float y2 = 2.0 * z.y;
+  float den = cos(x2) + cosh(y2) + 1e-10;
+  return vec2(sin(x2), sinh(y2)) / den;
 }
 
 vec2 complexSinh(vec2 z) {
@@ -51,8 +61,11 @@ vec2 complexCosh(vec2 z) {
 }
 
 vec2 complexTanh(vec2 z) {
-  // tanh(z) = sinh(z) / cosh(z)
-  return complexDiv(complexSinh(z), complexCosh(z));
+  // Similar identity for hyperbolic tangent
+  float x2 = 2.0 * z.x;
+  float y2 = 2.0 * z.y;
+  float den = cosh(x2) + cos(y2) + 1e-10;
+  return vec2(sinh(x2), sin(y2)) / den;
 }
 
 // --- Logarithm & Exponential ---

@@ -32,6 +32,7 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
   const paletteStore = usePaletteStore();
   let gl: WebGLRenderingContext;
   let animationFrameId: number;
+  let isRecording: boolean = false;
 
   let activeProgram: WebGLProgram;
   const uniformLocations: Record<string, WebGLUniformLocation | null> = {};
@@ -72,34 +73,29 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
     return prog;
   };
 
-  const updateActiveShader = () => {
-    const formulaId = fractalStore.formulaId;
-    const mode = fractalStore.memoryMode || "NONE"; // Ensure this exists in store
-    const cacheKey = `${formulaId}_${mode}`;
+  const updateActiveShader = (forceHighQual = false) => {
+    const { formulaId, memoryMode } = fractalStore;
+    // Add highQual to the cache key so we don't destroy our normal program
+    const cacheKey = `${formulaId}_${memoryMode}_${forceHighQual ? "HQ" : "LQ"}`;
 
-    // 1. Check if we already have this specific combination
     if (programCache.has(cacheKey)) {
       activeProgram = programCache.get(cacheKey)!;
     } else {
-      // 2. Recompile on the fly
       const formula = FORMULAS.find((f) => f.id === formulaId);
       if (!formula) return;
 
       const originalSource = processShader(formula.shaderSource, shaderLibrary);
-      const injectedSource = `#define MEM_${mode}\n${originalSource}`;
+      const injectedSource = `
+    ${forceHighQual ? "#define USE_SSAA\n" : ""}
+    #define MEM_${memoryMode}\n
+    ${originalSource}
+`;
 
-      try {
-        const newProg = createProgram(injectedSource);
-        programCache.set(cacheKey, newProg);
-        activeProgram = newProg;
-        console.log(`Successfully recompiled: ${cacheKey}`);
-      } catch (e) {
-        console.error("Recompilation failed:", e);
-        return;
-      }
+      const newProg = createProgram(injectedSource);
+      programCache.set(cacheKey, newProg);
+      activeProgram = newProg;
     }
 
-    // 3. Set the program and refresh uniform locations
     gl.useProgram(activeProgram);
     uniformNames.forEach((name) => {
       uniformLocations[name] = gl.getUniformLocation(activeProgram!, name);
@@ -108,7 +104,9 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
 
   const init = () => {
     if (!canvasRef.value) return;
-    gl = canvasRef.value.getContext("webgl")!;
+    gl = canvasRef.value.getContext("webgl", { preserveDrawingBuffer: true })!;
+    // setResolution(2560, 1600);
+    setResolution(1080, 1920);
 
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -126,10 +124,77 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
     updateActiveShader();
   });
 
-  const render = () => {
-    if (!gl || !activeProgram) return;
+  const updateLFOs = (time: number, totalDuration = 15) => {
+    // progress goes from 0.0 at the start to 1.0 at the very end
+    const progress = time / totalDuration;
+
+    const loopCount = 1;
+    const angle = progress * Math.PI * 2.0 * loopCount;
+
+    // fractalStore.params.slider.powerI = 0.5 + Math.sin(angle) * 0.5;
+
+    // fractalStore.params.slider.memoryI = Math.cos(angle) * 0.25;
+  };
+
+  const setResolution = (width: number, height: number) => {
+    const canvas = canvasRef.value!;
+    canvas.width = width;
+    canvas.height = height;
+    gl.viewport(0, 0, width, height);
+  };
+
+  const startRecording = async (durationSeconds = 15) => {
+    if (isRecording) return;
+    console.log("🎥 Starting Stable Recording...");
+    isRecording = true;
+    const fps = 60;
+    const totalFrames = durationSeconds * fps;
     const canvas = canvasRef.value!;
 
+    for (let i = 0; i < totalFrames; i++) {
+      const frameTime = i / fps;
+      render(frameTime);
+
+      const blob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob((b) => resolve(b), "image/png"),
+      );
+
+      if (blob) {
+        try {
+          const response = await fetch(
+            `http://localhost:3001/save-frame?frame=${i}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "image/png" },
+              body: blob,
+            },
+          );
+
+          if (!response.ok) throw new Error("Server failed to save frame");
+        } catch (err) {
+          console.error(`Frame ${i} failed! Stopping.`, err);
+          break;
+        }
+      }
+
+      if (i % 10 === 0) {
+        console.log(`🎬 Progress: ${Math.round((i / totalFrames) * 100)}%`);
+      }
+    }
+    console.log("✅ All frames sent. Asking server to stitch...");
+
+    await fetch(`http://localhost:3001/finish`, { method: "POST" });
+    isRecording = false;
+
+    console.log("🏁 Done! Check your project folder for the MP4.");
+  };
+
+  const render = (manualTime?: number) => {
+    if (!gl || !activeProgram) return;
+    if (isRecording && manualTime === undefined) return;
+    const canvas = canvasRef.value!;
+    const time =
+      manualTime !== undefined ? manualTime : performance.now() / 1000;
     inputStore.tickSmoothing();
     const w = Math.floor(canvas.clientWidth);
     const h = Math.floor(canvas.clientHeight);
@@ -147,7 +212,7 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
       uniformLocations.maxIterations,
       fractalStore.params.slider.maxIterations,
     );
-    gl.uniform1f(uniformLocations.time, performance.now() / 1000);
+    gl.uniform1f(uniformLocations.time, time);
 
     const keys = Object.keys(fractalStore.params.slider) as Array<
       keyof FractalParams
@@ -184,7 +249,10 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
     gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-    animationFrameId = requestAnimationFrame(render);
+    if (manualTime === undefined && !isRecording) {
+      animationFrameId = requestAnimationFrame(() => render());
+    }
+    updateLFOs(time);
   };
 
   onMounted(() => {
@@ -194,4 +262,8 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
   onUnmounted(() => {
     if (animationFrameId) cancelAnimationFrame(animationFrameId);
   });
+
+  return {
+    startRecording,
+  };
 }

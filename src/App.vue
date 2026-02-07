@@ -9,9 +9,13 @@ import { useInputStore } from "./store/useInputStore";
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 const inputStore = useInputStore();
 
-useFractalEngine(canvasRef);
+const engine = useFractalEngine(canvasRef);
 useKeyboardShortcuts();
 useMouseInteraction(canvasRef);
+const handleRecordRequest = () => {
+  // We call it here, and we can pass the 15-second default
+  engine.startRecording(15);
+};
 </script>
 
 <template>
@@ -22,7 +26,7 @@ useMouseInteraction(canvasRef);
       'selecting-y': inputStore.activeAxis === 'y',
     }"
   >
-    <FractalUI />
+    <FractalUI @trigger-record="handleRecordRequest" />
     <canvas ref="canvasRef"></canvas>
   </div>
 </template>
@@ -60,8 +64,11 @@ useMouseInteraction(canvasRef);
 }
 
 canvas {
-  flex-grow: 1;
+  // flex-grow: 1;
   height: 100%;
+  margin: 0px auto;
+  position: relative;
+  left: 50px;
 }
 
 hr {

@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { usePresetStore } from "../../store/usePresetStore";
 import { useFractalStore } from "../../store/useFractalStore";
+import type { Preset } from "../../types/preset";
 
 const presetStore = usePresetStore();
 const fractalStore = useFractalStore();
@@ -17,13 +18,13 @@ const handleSave = () => {
   }
 };
 
-const handleSelect = (preset: any) => {
+const handleSelect = (preset: Preset) => {
   presetStore.applyPreset(preset);
   isDropdownOpen.value = false;
 };
 
 const confirmDelete = (e: Event, index: number) => {
-  e.stopPropagation(); // Prevent loading the preset when clicking delete
+  e.stopPropagation();
   if (confirm("Delete this preset?")) {
     presetStore.deletePreset(index);
   }

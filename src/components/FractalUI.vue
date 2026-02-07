@@ -12,6 +12,14 @@ import PresetGallery from "./fractal-controls/PresetGallery.vue";
 import BaseSlider from "./fractal-controls/BaseSlider.vue";
 import { useInputStore } from "../store/useInputStore";
 
+const emit = defineEmits<{
+  (e: "trigger-record"): void;
+}>();
+
+const handleRecordClick = () => {
+  emit("trigger-record");
+};
+
 const fractalStore = useFractalStore();
 const inputStore = useInputStore();
 const viewStore = useViewStore();
@@ -78,6 +86,7 @@ const availableFormulas = computed(() => {
           <button @click="fractalStore.resetParams" class="button-primary">
             ⟲
           </button>
+          <button @click="handleRecordClick" class="button-primary">◯</button>
         </div>
       </div>
     </div>
