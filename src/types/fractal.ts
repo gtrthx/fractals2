@@ -33,3 +33,14 @@ export type MemoryMode =
   | "POW3"
   | "FOLD"
   | "SWIZZLE";
+
+export type ColoringMode =
+  | "DEFAULT"
+  | "ORBIT_TRAP"
+  | "CURVATURE"
+  | "STRIPES"
+  | "GRID"
+  | "DELTA"
+  | "STALKS"
+  | "BINARY"
+  | "EXP";

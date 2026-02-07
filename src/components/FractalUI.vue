@@ -11,6 +11,7 @@ import MemoryMode from "./fractal-controls/MemoryMode.vue";
 import PresetGallery from "./fractal-controls/PresetGallery.vue";
 import BaseSlider from "./fractal-controls/BaseSlider.vue";
 import { useInputStore } from "../store/useInputStore";
+import ColoringMode from "./fractal-controls/ColoringMode.vue";
 
 const emit = defineEmits<{
   (e: "trigger-record"): void;
@@ -74,6 +75,7 @@ const availableFormulas = computed(() => {
       </div>
 
       <MemoryMode />
+      <ColoringMode />
 
       <PresetGallery />
       <div class="footer-actions">

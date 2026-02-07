@@ -9,14 +9,19 @@ vec3 get_fractal_color(vec2 uv) {
   vec2 p = vec2(power, powerI);
   vec2 memFactor = vec2(memoryR, memoryI);
   vec2 zPrev = vec2(0.0);
-
   float iterations = 0.0;
   float escapeRadius = 100.0;
+
+  #if defined(COL_ORBIT_TRAP) || defined(COL_GRID) || defined(COL_STALKS)
+  float colorAcc = 1000.0;
+  #else
+  float colorAcc = 0.0;
+  #endif
 
   for (float i = 0.0; i < 1000.0; i++) {
     if (i >= maxIterations) break;
 
-    vec2 zNext = fractalStep(z, c, p, zPrev);
+    vec2 zNext = fractalStep(z, c, powerVec, zPrev);
 
     if (i > 0.0) {
       zNext += complexMul(zPrev, memFactor);
@@ -25,17 +30,33 @@ vec3 get_fractal_color(vec2 uv) {
     zPrev = getMemoryTransform(z);
     z = zNext;
 
+    #include "coloring_modes.glsl"
+
     if (length(z) > escapeRadius) break;
     iterations++;
   }
 
   if (iterations >= maxIterations - 1.0) return vec3(0.0);
 
-  float pMag = length(p);
   float smoothIter =
-    iterations - log(log(length(z)) / log(escapeRadius)) / log(max(pMag, 1.1));
+    iterations -
+    log(log(length(z)) / log(escapeRadius)) / log(max(length(p), 1.1));
+  float colorValue;
 
-  return get_palette(smoothIter / maxIterations);
+  #if defined(COL_ORBIT_TRAP) || defined(COL_STALKS) || defined(COL_GRID)
+  colorValue = fract(exp(-colorAcc * 2.0) + smoothIter * 0.1);
+  #elif defined(COL_CURVATURE) ||                                                \
+    defined(COL_DELTA) ||                                                      \
+    defined(COL_EXP) ||                                                        \
+    defined(COL_BINARY)
+  colorValue = colorAcc / iterations;
+  #elif defined(COL_STRIPES)
+  colorValue = fract(colorAcc * 0.1);
+  #else
+  colorValue = smoothIter / maxIterations;
+  #endif
+
+  return get_palette(colorValue);
 }
 
 void run_escape_engine() {

@@ -5,6 +5,7 @@ import { usePaletteStore } from "../store/usePaletteStore";
 import complexMath from "../shaders/shared/complex_math.glsl?raw";
 import commonHeader from "../shaders/shared/common_header.glsl?raw";
 import memoryModes from "../shaders/shared/memory_modes.glsl?raw";
+import coloringModes from "../shaders/shared/coloring_modes.glsl?raw";
 import escapeEngine from "../shaders/engines/escape_engine.glsl?raw";
 import newtonEngine from "../shaders/engines/newton_engine.glsl?raw";
 import novaEngine from "../shaders/engines/nova_engine.glsl?raw";
@@ -20,6 +21,8 @@ const shaderLibrary = {
   complex_math: complexMath,
   common_header: commonHeader,
   memory_modes: memoryModes,
+  coloring_modes: coloringModes,
+
   escape_engine: escapeEngine,
   newton_engine: newtonEngine,
   nova_engine: novaEngine,
@@ -74,9 +77,9 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
   };
 
   const updateActiveShader = (forceHighQual = false) => {
-    const { formulaId, memoryMode } = fractalStore;
+    const { formulaId, memoryMode, coloringMode } = fractalStore;
     // Add highQual to the cache key so we don't destroy our normal program
-    const cacheKey = `${formulaId}_${memoryMode}_${forceHighQual ? "HQ" : "LQ"}`;
+    const cacheKey = `${formulaId}_${memoryMode}_COL_${coloringMode}_${forceHighQual ? "HQ" : "LQ"}`;
 
     if (programCache.has(cacheKey)) {
       activeProgram = programCache.get(cacheKey)!;
@@ -88,6 +91,7 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
       const injectedSource = `
     ${forceHighQual ? "#define USE_SSAA\n" : ""}
     #define MEM_${memoryMode}\n
+    #define COL_${coloringMode}\n
     ${originalSource}
 `;
 
@@ -120,9 +124,16 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
     render();
   };
 
-  watch([() => fractalStore.formulaId, () => fractalStore.memoryMode], () => {
-    updateActiveShader();
-  });
+  watch(
+    [
+      () => fractalStore.formulaId,
+      () => fractalStore.memoryMode,
+      () => fractalStore.coloringMode,
+    ],
+    () => {
+      updateActiveShader();
+    },
+  );
 
   const updateLFOs = (time: number, totalDuration = 15) => {
     // progress goes from 0.0 at the start to 1.0 at the very end
