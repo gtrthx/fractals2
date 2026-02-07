@@ -3,55 +3,99 @@ import { useFractalStore } from "../store/useFractalStore";
 import { usePaletteStore } from "../store/usePaletteStore";
 import { useInputStore } from "../store/useInputStore";
 import { useViewStore } from "../store/useViewStore";
+import { useColoringStore } from "../store/useColoringStore";
+import { useMemoryStore } from "../store/useMemoryStore";
 import { captureThumbnail, downloadImage } from "../utils/screenshot";
+import { usePresetStore } from "../store/usePresetStore";
 
 export function useKeyboardShortcuts() {
-  const fractalStore = useFractalStore();
-  const paletteStore = usePaletteStore();
-  const inputStore = useInputStore();
-  const viewStore = useViewStore();
-
-  const shortcuts: Record<string, (e: KeyboardEvent) => void> = {
-    Space: (e) => {
-      e.preventDefault();
-      inputStore.togglePause();
-    },
-    KeyW: (e) => {
-      e.preventDefault();
-      viewStore.resetView();
-    },
-    Backquote: (e) => {
-      e.preventDefault();
-      viewStore.toggleUi();
-    },
-    KeyQ: () => paletteStore.prevPalette(),
-    KeyE: () => paletteStore.nextPalette(),
-    KeyT: () => paletteStore.generateRandomPalette(),
-
-    KeyR: () => fractalStore.randomizeParams(),
-    KeyA: () => inputStore.toggleTargetAxis("x"),
-    KeyD: () => inputStore.toggleTargetAxis("y"),
-    KeyG: () => inputStore.unbindAll(),
-    KeyS: () => {
-      const canvas = document.querySelector("canvas");
-      captureThumbnail(canvas, 0.1).then((thumb) => {
-        console.log(thumb);
-        downloadImage(thumb, `fractal_${fractalStore.formulaId}.webp`);
-      }); // 10% size
-    },
-
-    Digit1: () => fractalStore.switchFractalType("escape"),
-    Digit2: () => fractalStore.switchFractalType("newton"),
-    Digit3: () => fractalStore.switchFractalType("nova"),
-    Digit4: () => fractalStore.switchFractalType("kleinian"),
-    ArrowRight: () => fractalStore.nextFormula(),
-    ArrowLeft: () => fractalStore.prevFormula(),
-    Escape: () => (inputStore.activeAxis = null),
-  };
+  const fractal = useFractalStore();
+  const palette = usePaletteStore();
+  const input = useInputStore();
+  const view = useViewStore();
+  const coloring = useColoringStore();
+  const memory = useMemoryStore();
+  const preset = usePresetStore();
 
   const handleKeyDown = (e: KeyboardEvent) => {
-    const action = shortcuts[e.code];
-    if (action) action(e);
+    // Prevent triggering while typing in text boxes
+    const target = e.target as HTMLElement;
+    if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
+
+    // Navigation
+    const arrowKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
+    if (arrowKeys.includes(e.code)) {
+      e.preventDefault();
+
+      if (e.code === "ArrowUp") {
+        e.shiftKey ? coloring.prevMode() : palette.prevPalette();
+      } else if (e.code === "ArrowDown") {
+        e.shiftKey ? coloring.nextMode() : palette.nextPalette();
+      } else if (e.code === "ArrowLeft") {
+        if (e.shiftKey) preset.prevPreset();
+        else if (e.ctrlKey || e.metaKey) memory.prevOperator();
+        else fractal.prevFormula();
+      } else if (e.code === "ArrowRight") {
+        if (e.shiftKey) preset.nextPreset();
+        else if (e.ctrlKey || e.metaKey) memory.nextOperator();
+        else fractal.nextFormula();
+      }
+      return;
+    }
+
+    // Command Shortcuts
+    switch (e.code) {
+      case "Space":
+        e.preventDefault();
+        input.togglePause();
+        break;
+      case "KeyW":
+        view.resetView();
+        break;
+      case "Backquote":
+        view.toggleUi();
+        break;
+      case "KeyR":
+        fractal.randomizeParams();
+        break;
+      case "KeyT":
+        palette.generateRandomPalette();
+        break;
+      case "KeyA":
+        input.toggleTargetAxis("x");
+        break;
+      case "KeyD":
+        input.toggleTargetAxis("y");
+        break;
+      case "KeyG":
+        input.unbindAll();
+        break;
+      case "Escape":
+        input.activeAxis = null;
+        break;
+      case "KeyS":
+        if (e.ctrlKey || e.metaKey) e.preventDefault();
+        const canvas = document.querySelector("canvas");
+        if (canvas) {
+          captureThumbnail(canvas, 0.1).then((thumb) => {
+            downloadImage(thumb, `fractal_${fractal.formulaId}.webp`);
+          });
+        }
+        break;
+
+      case "Digit1":
+        fractal.switchFractalType("escape");
+        break;
+      case "Digit2":
+        fractal.switchFractalType("newton");
+        break;
+      case "Digit3":
+        fractal.switchFractalType("nova");
+        break;
+      case "Digit4":
+        fractal.switchFractalType("kleinian");
+        break;
+    }
   };
 
   onMounted(() => window.addEventListener("keydown", handleKeyDown));

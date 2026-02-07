@@ -2,14 +2,14 @@
 import { useFractalTheme } from "../composables/useFractalTheme";
 import { useInputStore } from "../store/useInputStore";
 
-const inputStore = useInputStore();
+const input = useInputStore();
 const { getVarColor } = useFractalTheme();
 
 const getBindings = (axis: "x" | "y") =>
-  axis === "x" ? inputStore.bindings.x : inputStore.bindings.y;
+  axis === "x" ? input.bindings.x : input.bindings.y;
 
 const handleWellClick = (axis: "x" | "y") => {
-  inputStore.toggleTargetAxis(axis);
+  input.toggleTargetAxis(axis);
 };
 </script>
 
@@ -20,12 +20,12 @@ const handleWellClick = (axis: "x" | "y") => {
       :key="axis"
       class="axis-well"
       :class="{
-        'is-active': inputStore.activeAxis === axis,
+        'is-active': input.activeAxis === axis,
         'is-empty': getBindings(axis).length === 0,
       }"
       @click="handleWellClick(axis)"
     >
-      <div v-if="inputStore.activeAxis === axis" class="active-glow"></div>
+      <div v-if="input.activeAxis === axis" class="active-glow"></div>
 
       <div class="well-header">
         <span class="axis-label">Mouse {{ axis.toUpperCase() }}</span>
@@ -38,7 +38,7 @@ const handleWellClick = (axis: "x" | "y") => {
           class="pill"
           :style="{ borderColor: getVarColor(v), color: getVarColor(v) }"
           title="Click to remove"
-          @click.stop="inputStore.unbindVariable(v, axis)"
+          @click.stop="input.unbindVariable(v, axis)"
         >
           {{ v }}
           <span class="remove-x">×</span>

@@ -3,10 +3,10 @@ import { computed } from "vue";
 import { useFractalStore } from "../../store/useFractalStore";
 import { useFractalTheme } from "../../composables/useFractalTheme";
 
-const fractalStore = useFractalStore();
+const fractal = useFractalStore();
 const { colors, mathStyles } = useFractalTheme();
 
-const currentFormulaId = computed(() => fractalStore.formulaId);
+const currentFormulaId = computed(() => fractal.formulaId);
 </script>
 
 <template>

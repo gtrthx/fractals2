@@ -14,8 +14,8 @@ const props = defineProps<{
   paramKey: keyof FractalParams;
 }>();
 
-const fractalStore = useFractalStore();
-const inputStore = useInputStore();
+const fractal = useFractalStore();
+const input = useInputStore();
 const emit = defineEmits(["update:modelValue", "change"]);
 const isDragging = ref(false);
 
@@ -35,12 +35,12 @@ let startValue = 0;
 
 const currentValue = computed(() => {
   const key = props.paramKey;
-  return fractalStore.params.live[key];
+  return fractal.params.live[key];
 });
 
 const handleClick = (e: MouseEvent) => {
-  if (inputStore.activeAxis) {
-    inputStore.bindVariable(props.paramKey);
+  if (input.activeAxis) {
+    input.bindVariable(props.paramKey);
   } else {
     startDrag(e);
   }
@@ -48,7 +48,7 @@ const handleClick = (e: MouseEvent) => {
 
 const handleReset = (e: MouseEvent) => {
   e.stopPropagation();
-  const defaultValue = fractalStore.params.initial[props.paramKey];
+  const defaultValue = fractal.params.initial[props.paramKey];
 
   if (defaultValue === undefined) return;
 
@@ -71,7 +71,7 @@ const startDrag = (e: MouseEvent) => {
 
 const onDrag = (e: MouseEvent) => {
   const sensitivity = props.step || 0.01;
-  const delta = (e.clientX - startX) * sensitivity * inputStore.intensity;
+  const delta = (e.clientX - startX) * sensitivity * input.intensity;
 
   // 1. Calculate the "raw" target value based on mouse movement
   let targetVal = startValue + delta;
@@ -128,7 +128,7 @@ onUnmounted(() => {
     class="slidable-number"
     :class="{
       'is-dragging': isDragging,
-      'is-pickable': inputStore.activeAxis !== null,
+      'is-pickable': input.activeAxis !== null,
     }"
     :style="{ color: color || '#646cff' }"
     @mousedown="handleClick"

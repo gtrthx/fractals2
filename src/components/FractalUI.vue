@@ -21,39 +21,38 @@ const handleRecordClick = () => {
   emit("trigger-record");
 };
 
-const fractalStore = useFractalStore();
-const inputStore = useInputStore();
-const viewStore = useViewStore();
+const fractal = useFractalStore();
+const input = useInputStore();
+const view = useViewStore();
 const availableFormulas = computed(() => {
-  return FORMULAS.filter((f) => f.fractalType === fractalStore.currentType);
+  return FORMULAS.filter((f) => f.fractalType === fractal.currentType);
 });
 </script>
 
 <template>
   <Transition name="fade">
-    <div id="ui" v-show="viewStore.isUiVisible">
+    <div id="ui" v-show="view.isUiVisible">
       <div class="ui-header">
         <select
-          v-model="fractalStore.currentType"
+          v-model="fractal.currentType"
           class="fractal-selector"
-          @change="fractalStore.switchFractalType()"
+          @change="fractal.switchFractalType()"
         >
           <option value="escape">Escape Time</option>
           <option value="newton">Root Finding</option>
           <option value="nova">Nova</option>
           <option value="kleinian">Kleinian</option>
         </select>
-        <button class="close-ui-btn" @click="viewStore.toggleUi()">
+        <button class="close-ui-btn" @click="view.toggleUi()">
           <span class="icon">◀</span>
         </button>
       </div>
 
       <div class="formula-selector-container">
         <select
-          :value="fractalStore.formulaId"
+          :value="fractal.formulaId"
           @change="
-            (e) =>
-              fractalStore.setFormula((e.target as HTMLSelectElement).value)
+            (e) => fractal.setFormula((e.target as HTMLSelectElement).value)
           "
           class="sub-selector"
         >
@@ -72,7 +71,7 @@ const availableFormulas = computed(() => {
 
       <div class="intensity-row">
         <div class="intensity-label">Intensity</div>
-        <BaseSlider v-model="inputStore.intensity" default-value="1.0" />
+        <BaseSlider v-model="input.intensity" default-value="1.0" />
       </div>
       <!-- 
       <div class="intensity-row">
@@ -90,13 +89,9 @@ const availableFormulas = computed(() => {
       <div class="footer-actions">
         <PaletteSelector />
         <div class="button-row">
-          <button @click="viewStore.resetView" class="button-primary">
-            🔄
-          </button>
+          <button @click="view.resetView" class="button-primary">🔄</button>
           <FractalRandomizer />
-          <button @click="fractalStore.resetParams" class="button-primary">
-            ⟲
-          </button>
+          <button @click="fractal.resetParams" class="button-primary">⟲</button>
           <button @click="handleRecordClick" class="button-primary">◯</button>
         </div>
       </div>

@@ -3,20 +3,13 @@ import gsap from "gsap";
 import { FORMULAS } from "../constants/formulas";
 import { DEFAULT_FRACTAL_PARAMS } from "../constants/base-fractal-params";
 import { useViewStore } from "./useViewStore";
-import type {
-  FractalType,
-  FractalParams,
-  MemoryMode,
-  ColoringMode,
-} from "../types/fractal";
+import type { FractalType, FractalParams } from "../types/fractal";
 import { useInputStore } from "./useInputStore";
 
 export const useFractalStore = defineStore("fractal", {
   state: () => ({
     currentType: "escape" as FractalType,
     formulaId: "mandelbrot",
-    memoryMode: "NONE" as MemoryMode,
-    coloringMode: "DEFAULT" as ColoringMode,
     params: {
       // For resetting sliders
       initial: { ...DEFAULT_FRACTAL_PARAMS } as FractalParams,
@@ -50,15 +43,15 @@ export const useFractalStore = defineStore("fractal", {
       const formula = FORMULAS.find((f) => f.id === id);
       if (!formula) return;
 
-      const viewStore = useViewStore();
+      const view = useViewStore();
       this.formulaId = id;
       this.currentType = formula.fractalType;
 
-      if (formula.zoom !== undefined) viewStore.zoom = formula.zoom;
+      if (formula.zoom !== undefined) view.zoom = formula.zoom;
       if (formula.offsetShiftX !== undefined)
-        viewStore.offset.x = formula.offsetShiftX;
+        view.offset.x = formula.offsetShiftX;
       if (formula.offsetShiftY !== undefined)
-        viewStore.offset.y = formula.offsetShiftY;
+        view.offset.y = formula.offsetShiftY;
     },
     resetParams(): void {
       const formula = FORMULAS.find((f) => f.id === this.formulaId);
@@ -73,21 +66,21 @@ export const useFractalStore = defineStore("fractal", {
       });
     },
     nextFormula(): void {
-      const idx = FORMULAS.findIndex((f) => f.id === this.formulaId);
-      this.setFormula(FORMULAS[(idx + 1) % FORMULAS.length].id);
+      const index = FORMULAS.findIndex((f) => f.id === this.formulaId);
+      this.setFormula(FORMULAS[(index + 1) % FORMULAS.length].id);
     },
 
     prevFormula(): void {
-      const idx = FORMULAS.findIndex((f) => f.id === this.formulaId);
+      const index = FORMULAS.findIndex((f) => f.id === this.formulaId);
       this.setFormula(
-        FORMULAS[(idx - 1 + FORMULAS.length) % FORMULAS.length].id,
+        FORMULAS[(index - 1 + FORMULAS.length) % FORMULAS.length].id,
       );
     },
     updateAnchorParams(): void {
       this.params.anchor = { ...this.params.slider };
     },
     randomizeParams() {
-      const inputStore = useInputStore();
+      const input = useInputStore();
 
       const targetValues: Partial<FractalParams> = {};
       const keys = Object.keys(this.params.slider) as (keyof FractalParams)[];
@@ -97,7 +90,7 @@ export const useFractalStore = defineStore("fractal", {
 
         const baseVal = this.params.anchor[key] as number;
 
-        const offset = (Math.random() - 0.5) * inputStore.intensity;
+        const offset = (Math.random() - 0.5) * input.intensity;
         targetValues[key] = baseVal + offset;
       });
 

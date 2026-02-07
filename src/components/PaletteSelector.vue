@@ -4,7 +4,7 @@ import { getPaletteCSS } from "../utils/getPaletteCss";
 import { palettes } from "../constants/palettes";
 import { usePaletteStore } from "../store/usePaletteStore";
 
-const paletteStore = usePaletteStore();
+const palette = usePaletteStore();
 const isDropdownExpanded = ref(false);
 </script>
 
@@ -18,7 +18,7 @@ const isDropdownExpanded = ref(false);
         <div
           class="preview-bar"
           :style="{
-            background: getPaletteCSS(paletteStore.selectedPalette),
+            background: getPaletteCSS(palette.selectedPalette),
           }"
         ></div>
         <span class="arrow">{{ isDropdownExpanded ? "▲" : "▼" }}</span>
@@ -31,19 +31,16 @@ const isDropdownExpanded = ref(false);
               v-for="(p, index) in palettes"
               class="palette-brick"
               :class="{
-                active:
-                  !paletteStore.isRandom && paletteStore.currentIndex === index,
+                active: !palette.isRandom && palette.currentIndex === index,
               }"
               :style="{ background: getPaletteCSS(p) }"
               @click="
-                paletteStore.setPaletteByIndex(index);
+                palette.setPaletteByIndex(index);
                 isDropdownExpanded = false;
               "
             >
               <div
-                v-if="
-                  !paletteStore.isRandom && paletteStore.currentIndex === index
-                "
+                v-if="!palette.isRandom && palette.currentIndex === index"
                 class="check"
               >
                 ✓
@@ -57,7 +54,7 @@ const isDropdownExpanded = ref(false);
     <button
       class="button-primary"
       title="Randomize Colors"
-      @click="paletteStore.generateRandomPalette"
+      @click="palette.generateRandomPalette"
     >
       🎲
     </button>

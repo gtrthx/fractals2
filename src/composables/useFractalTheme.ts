@@ -4,7 +4,7 @@ import { type ColorKey, UI_COLORS, VAR_COLOR_MAP } from "../constants/ui/theme";
 import type { FractalParams } from "../types/fractal";
 
 export function useFractalTheme() {
-  const fractalStore = useFractalStore();
+  const fractal = useFractalStore();
 
   const getColor = (key: ColorKey): string => {
     return UI_COLORS[key] || UI_COLORS.default;
@@ -16,7 +16,7 @@ export function useFractalTheme() {
 
   // Centralized Math Symbol Logic
   const mathStyles = computed(() => {
-    const ratio = fractalStore.params.slider.juliaMorph;
+    const ratio = fractal.params.slider.juliaMorph;
     const isJuliaMode = ratio > 0.5;
 
     const baseStyle = {

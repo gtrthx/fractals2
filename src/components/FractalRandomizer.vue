@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { useFractalStore } from "../store/useFractalStore";
-const fractalStore = useFractalStore();
+const fractal = useFractalStore();
 </script>
 
 <template>
-  <button @click="fractalStore.randomizeParams" class="button-primary">
+  <button @click="fractal.randomizeParams" class="button-primary">
     <span class="icon">🎲</span>
   </button>
 </template>

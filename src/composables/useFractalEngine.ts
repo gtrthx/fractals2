@@ -17,6 +17,8 @@ import { DEFAULT_FRACTAL_PARAMS } from "../constants/base-fractal-params";
 import { useInputStore } from "../store/useInputStore";
 import { useViewStore } from "../store/useViewStore";
 import type { FractalParams } from "../types/fractal";
+import { useMemoryStore } from "../store/useMemoryStore";
+import { useColoringStore } from "../store/useColoringStore";
 
 const shaderLibrary = {
   complex_math: complexMath,
@@ -31,10 +33,13 @@ const shaderLibrary = {
 };
 
 export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
-  const fractalStore = useFractalStore();
-  const inputStore = useInputStore();
-  const viewStore = useViewStore();
-  const paletteStore = usePaletteStore();
+  const fractal = useFractalStore();
+  const input = useInputStore();
+  const view = useViewStore();
+  const palette = usePaletteStore();
+  const memory = useMemoryStore();
+  const coloring = useColoringStore();
+
   let gl: WebGLRenderingContext;
   let animationFrameId: number;
   let isRecording: boolean = false;
@@ -79,9 +84,9 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
   };
 
   const updateActiveShader = (forceHighQual = false) => {
-    const { formulaId, memoryMode, coloringMode } = fractalStore;
+    const { formulaId } = fractal;
     // Add highQual to the cache key so we don't destroy our normal program
-    const cacheKey = `${formulaId}_${memoryMode}_COL_${coloringMode}_${forceHighQual ? "HQ" : "LQ"}`;
+    const cacheKey = `${formulaId}_${memory.currentMode}_COL_${coloring.currentMode}_${forceHighQual ? "HQ" : "LQ"}`;
 
     if (programCache.has(cacheKey)) {
       activeProgram = programCache.get(cacheKey)!;
@@ -92,8 +97,8 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
       const originalSource = processShader(formula.shaderSource, shaderLibrary);
       const injectedSource = `
     ${forceHighQual ? "#define USE_SSAA\n" : ""}
-    #define MEM_${memoryMode}\n
-    #define COL_${coloringMode}\n
+    #define MEM_${memory.currentMode}\n
+    #define COL_${coloring.currentMode}\n
     ${originalSource}
 `;
 
@@ -128,9 +133,9 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
 
   watch(
     [
-      () => fractalStore.formulaId,
-      () => fractalStore.memoryMode,
-      () => fractalStore.coloringMode,
+      () => fractal.formulaId,
+      () => memory.currentMode,
+      () => coloring.currentMode,
     ],
     () => {
       updateActiveShader();
@@ -144,7 +149,7 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
     const loopCount = 1;
     const angle = progress * Math.PI * 2.0 * loopCount;
 
-    fractalStore.params.slider.powerI = 0.5 + Math.sin(angle) * 0.5;
+    fractal.params.slider.powerI = 0.5 + Math.sin(angle) * 0.5;
 
     // fractalStore.params.slider.memoryI = Math.cos(angle) * 0.25;
   };
@@ -208,7 +213,7 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
     const canvas = canvasRef.value!;
     const time =
       manualTime !== undefined ? manualTime : performance.now() / 1000;
-    inputStore.tickSmoothing();
+    input.tickSmoothing();
     const w = Math.floor(canvas.clientWidth);
     const h = Math.floor(canvas.clientHeight);
     if (Math.abs(canvas.width - w) > 1 || Math.abs(canvas.height - h) > 1) {
@@ -218,45 +223,44 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
     }
 
     gl.uniform2f(uniformLocations.resolution, w, h);
-    gl.uniform1f(uniformLocations.zoom, viewStore.zoom);
-    gl.uniform1f(uniformLocations.offsetShiftX, viewStore.offset.x);
-    gl.uniform1f(uniformLocations.offsetShiftY, viewStore.offset.y);
+    gl.uniform1f(uniformLocations.zoom, view.zoom);
+    gl.uniform1f(uniformLocations.offsetShiftX, view.offset.x);
+    gl.uniform1f(uniformLocations.offsetShiftY, view.offset.y);
     gl.uniform1f(
       uniformLocations.maxIterations,
-      fractalStore.params.slider.maxIterations,
+      fractal.params.slider.maxIterations,
     );
     gl.uniform1f(uniformLocations.time, time);
 
-    const keys = Object.keys(fractalStore.params.slider) as Array<
+    const keys = Object.keys(fractal.params.slider) as Array<
       keyof FractalParams
     >;
     keys.forEach((key) => {
       const loc = uniformLocations[key];
       if (!loc) return;
 
-      const baseVal = fractalStore.params.slider[key];
+      const baseVal = fractal.params.slider[key];
       const sens =
-        (key.toLowerCase().includes("power") ? 0.3 : 1.0) *
-        inputStore.intensity;
+        (key.toLowerCase().includes("power") ? 0.3 : 1.0) * input.intensity;
 
       let liveVal = baseVal;
-      if (inputStore.bindings.x.includes(key))
-        liveVal += inputStore.mouse.smoothedX * sens;
-      if (inputStore.bindings.y.includes(key))
-        liveVal += inputStore.mouse.smoothedY * sens;
+      if (input.bindings.x.includes(key))
+        liveVal += input.mouse.smoothedX * sens;
+      if (input.bindings.y.includes(key))
+        liveVal += input.mouse.smoothedY * sens;
 
       gl.uniform1f(loc, liveVal);
-      fractalStore.params.live[key] = liveVal;
+      fractal.params.live[key] = liveVal;
     });
 
-    const palette = paletteStore.selectedPalette;
+    const { brightness, contrast, osc, phase } = palette.selectedPalette;
     const setVec3 = (name: string, val: number[]) => {
       gl.uniform3fv(uniformLocations[name], new Float32Array(val));
     };
-    setVec3("brightness", palette.brightness);
-    setVec3("contrast", palette.contrast);
-    setVec3("osc", palette.osc);
-    setVec3("phase", palette.phase);
+    setVec3("brightness", brightness);
+    setVec3("contrast", contrast);
+    setVec3("osc", osc);
+    setVec3("phase", phase);
     const pos = gl.getAttribLocation(activeProgram, "a_position");
     gl.enableVertexAttribArray(pos);
     gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
@@ -270,7 +274,7 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
 
   onMounted(() => {
     init();
-    fractalStore.switchFractalType("escape");
+    fractal.switchFractalType("escape");
   });
   onUnmounted(() => {
     if (animationFrameId) cancelAnimationFrame(animationFrameId);

@@ -5,8 +5,8 @@ import { useViewStore } from "../store/useViewStore";
 export function useMouseInteraction(canvasRef: {
   value: HTMLCanvasElement | null;
 }) {
-  const inputStore = useInputStore();
-  const viewStore = useViewStore();
+  const input = useInputStore();
+  const view = useViewStore();
   let isCanvasDragging = false;
 
   const updateMousePos = (e: MouseEvent) => {
@@ -19,7 +19,7 @@ export function useMouseInteraction(canvasRef: {
     const x = (e.clientX - rect.left - canvas.clientWidth / 2) / baseDimention;
     const y = -(e.clientY - rect.top - canvas.clientHeight / 2) / baseDimention;
 
-    inputStore.updateMouse(x, y);
+    input.updateMouse(x, y);
   };
 
   const handleMouseMove = (e: MouseEvent) => {
@@ -28,22 +28,22 @@ export function useMouseInteraction(canvasRef: {
       if (!canvas) return;
       const baseDimention = Math.min(canvas.clientWidth, canvas.clientHeight);
 
-      viewStore.offset.x -= (e.movementX / baseDimention) * viewStore.zoom;
-      viewStore.offset.y += (e.movementY / baseDimention) * viewStore.zoom;
+      view.offset.x -= (e.movementX / baseDimention) * view.zoom;
+      view.offset.y += (e.movementY / baseDimention) * view.zoom;
     }
 
     updateMousePos(e);
   };
   const handleGlobalClick = (e: MouseEvent) => {
-    if (!inputStore.activeAxis) return;
+    if (!input.activeAxis) return;
     if (!(e.target as HTMLElement).closest(".axis-container")) {
-      inputStore.activeAxis = null;
+      input.activeAxis = null;
     }
   };
 
   const handleWheel = (e: WheelEvent) => {
     e.preventDefault();
-    viewStore.smoothZoom(e.deltaY);
+    view.smoothZoom(e.deltaY);
   };
 
   onMounted(() => {

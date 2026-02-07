@@ -7,7 +7,7 @@ import { useKeyboardShortcuts } from "./composables/useKeyboardShortcuts";
 import { useInputStore } from "./store/useInputStore";
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
-const inputStore = useInputStore();
+const input = useInputStore();
 
 const engine = useFractalEngine(canvasRef);
 useKeyboardShortcuts();
@@ -22,8 +22,8 @@ const handleRecordRequest = () => {
   <div
     class="app-container"
     :class="{
-      'selecting-x': inputStore.activeAxis === 'x',
-      'selecting-y': inputStore.activeAxis === 'y',
+      'selecting-x': input.activeAxis === 'x',
+      'selecting-y': input.activeAxis === 'y',
     }"
   >
     <FractalUI @trigger-record="handleRecordRequest" />

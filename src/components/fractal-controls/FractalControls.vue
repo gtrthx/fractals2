@@ -11,12 +11,12 @@ import { BASE_SLIDER_CONSTRAINTS } from "../../constants/ui/base-slider-constrai
 import type { ControlGroup, SliderSchema } from "../../types/ui";
 import ParamSlider from "./ParamSlider.vue";
 
-const fractalStore = useFractalStore();
-const inputStore = useInputStore();
+const fractal = useFractalStore();
+const input = useInputStore();
 const { getColor } = useFractalTheme();
 
 const activeControls = computed<ControlGroup[]>(() => {
-  const formula = FORMULAS.find((f) => f.id === fractalStore.formulaId);
+  const formula = FORMULAS.find((f) => f.id === fractal.formulaId);
   if (!formula) return [];
 
   const groups =
@@ -41,19 +41,19 @@ const handleGroupLabelClick = (group: ControlGroup) => {
   if (!sliders.length) return;
 
   if (sliders.length >= 2) {
-    inputStore.toggleGroupBinding({
+    input.toggleGroupBinding({
       x: sliders[0].paramKey,
       y: sliders[1].paramKey,
     });
   } else {
-    inputStore.toggleGroupBinding({
+    input.toggleGroupBinding({
       x: sliders[0].paramKey,
     });
   }
 };
 
 const isGroupBound = (group: ControlGroup) => {
-  return group.sliders.some((s) => inputStore.isParamBound(s.paramKey));
+  return group.sliders.some((s) => input.isParamBound(s.paramKey));
 };
 </script>
 
@@ -87,12 +87,12 @@ const isGroupBound = (group: ControlGroup) => {
             >
 
             <ParamSlider
-              v-model="fractalStore.params.slider[slider.paramKey]"
+              v-model="fractal.params.slider[slider.paramKey]"
               :paramKey="slider.paramKey"
               :color="getColor(group.colorKey)"
-              :is-bound="!!inputStore.isParamBound(slider.paramKey)"
+              :is-bound="!!input.isParamBound(slider.paramKey)"
               v-bind="getSliderProps(slider)"
-              @change="fractalStore.updateAnchorParams()"
+              @change="fractal.updateAnchorParams()"
             />
 
             <span
