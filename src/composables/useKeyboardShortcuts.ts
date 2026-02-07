@@ -3,6 +3,7 @@ import { useFractalStore } from "../store/useFractalStore";
 import { usePaletteStore } from "../store/usePaletteStore";
 import { useInputStore } from "../store/useInputStore";
 import { useViewStore } from "../store/useViewStore";
+import { captureThumbnail, downloadImage } from "../utils/screenshot";
 
 export function useKeyboardShortcuts() {
   const fractalStore = useFractalStore();
@@ -31,6 +32,13 @@ export function useKeyboardShortcuts() {
     KeyA: () => inputStore.toggleTargetAxis("x"),
     KeyD: () => inputStore.toggleTargetAxis("y"),
     KeyG: () => inputStore.unbindAll(),
+    KeyS: () => {
+      const canvas = document.querySelector("canvas");
+      const thumb = captureThumbnail(canvas, 0.1).then((thumb) => {
+        console.log(thumb);
+        downloadImage(thumb, `fractal_${fractalStore.formulaId}.webp`);
+      }); // 10% size
+    },
 
     Digit1: () => fractalStore.switchFractalType("escape"),
     Digit2: () => fractalStore.switchFractalType("newton"),
