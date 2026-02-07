@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onUnmounted, ref, watch } from "vue";
+import { onUnmounted, ref, watch, computed } from "vue";
 import gsap from "gsap";
 
 const props = defineProps<{
@@ -7,6 +7,8 @@ const props = defineProps<{
   step?: number;
   color?: string;
   defaultValue?: string;
+  isZoom?: boolean;
+  baseReference?: number;
 }>();
 
 const emit = defineEmits(["update:modelValue", "change"]);
@@ -26,17 +28,33 @@ watch(
 let startX = 0;
 let startValue = 0;
 
-const handleClick = (e: MouseEvent) => {
-  startDrag(e);
-};
+const magnification = computed(() => {
+  if (!props.isZoom || !props.baseReference) return 1;
+  return props.baseReference / props.modelValue;
+});
+
+const zoomLabel = computed(() => {
+  const mag = magnification.value;
+  if (mag < 1000) return mag.toFixed(1) + "x"; // Show "1.0x" to "999x"
+
+  // Convert to scientific notation: 1.2e4
+  const exp = Math.floor(Math.log10(mag));
+  const leading = (mag / Math.pow(10, exp)).toFixed(2);
+  return `${leading}e${exp}`;
+});
 
 const handleReset = (e: MouseEvent) => {
   e.stopPropagation();
-  if (props.defaultValue === undefined) return;
+  // If zooming, we reset to the baseReference; otherwise use defaultValue
+  const resetValue = props.isZoom
+    ? props.baseReference
+    : Number(props.defaultValue);
+  if (resetValue === undefined) return;
 
   gsap.to(tweenTarget, {
-    val: props.defaultValue,
+    val: resetValue,
     duration: 0.5,
+    ease: "power2.out",
     onUpdate: () => emit("update:modelValue", tweenTarget.val),
   });
 };
@@ -55,28 +73,36 @@ const onDrag = (e: MouseEvent) => {
   const sensitivity = props.step || 0.01;
   const delta = (e.clientX - startX) * sensitivity;
 
-  let rawVal = startValue + delta;
-
-  const nearestInt = Math.round(rawVal);
-  const distance = rawVal - nearestInt; // How far are we from the integer?
-  const gravityRadius = 0.2; // How far away the "pull" starts
-
   let finalVal;
 
-  if (Math.abs(distance) < gravityRadius && !e.shiftKey) {
-    const strength = Math.pow(Math.abs(distance) / gravityRadius, 2);
-    finalVal = nearestInt + distance * strength;
-  } else {
-    finalVal = rawVal;
-  }
+  if (props.isZoom && props.baseReference) {
+    // We use Base 2 for the DRAGGING feel (much smoother)
+    // but the LABEL above will show Base 10.
+    const startExp = Math.log2(props.baseReference / startValue);
+    let targetExp = startExp + delta;
 
+    // Clamp at roughly 11-12 to avoid the "32-bit jitter"
+    targetExp = Math.min(targetExp, 12.0);
+
+    finalVal = props.baseReference / Math.pow(2, targetExp);
+  } else {
+    let rawVal = startValue + delta;
+    const nearestInt = Math.round(rawVal);
+    const distance = rawVal - nearestInt;
+    const gravityRadius = 0.2;
+
+    if (Math.abs(distance) < gravityRadius && !e.shiftKey) {
+      const strength = Math.pow(Math.abs(distance) / gravityRadius, 2);
+      finalVal = nearestInt + distance * strength;
+    } else {
+      finalVal = rawVal;
+    }
+  }
   gsap.to(tweenTarget, {
     val: finalVal,
     duration: 0.05,
     overwrite: true,
-    onUpdate: () => {
-      emit("update:modelValue", tweenTarget.val);
-    },
+    onUpdate: () => emit("update:modelValue", tweenTarget.val),
   });
 };
 
@@ -98,14 +124,15 @@ onUnmounted(() => {
 <template>
   <span
     class="slidable-number"
-    :class="{
-      'is-dragging': isDragging,
-    }"
+    :class="{ 'is-dragging': isDragging }"
     :style="{ color: color || '#646cff' }"
-    @mousedown="handleClick"
+    @mousedown="startDrag"
     @dblclick="handleReset"
   >
-    {{ modelValue?.toFixed(2) ?? "0.00" }}
+    <template v-if="isZoom"> {{ zoomLabel }} </template>
+    <template v-else>
+      {{ modelValue?.toFixed(2) ?? "0.00" }}
+    </template>
   </span>
 </template>
 
@@ -121,6 +148,8 @@ onUnmounted(() => {
   transition:
     background 0.2s,
     color 0.2s;
+  min-width: 60px;
+  text-align: center;
 }
 
 .slidable-number:hover {

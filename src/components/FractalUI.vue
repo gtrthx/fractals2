@@ -69,13 +69,17 @@ const availableFormulas = computed(() => {
 
       <InputAxisBindings />
 
-      <div class="intensity-row">
-        <div class="intensity-label">Intensity</div>
+      <div class="slider-row">
+        <div class="slider-label">Intensity</div>
         <BaseSlider v-model="input.intensity" default-value="1.0" />
       </div>
+      <div class="slider-row">
+        <div class="slider-label">Zoom</div>
+        <BaseSlider v-model="view.zoom" is-zoom :base-reference="2.5" />
+      </div>
       <!-- 
-      <div class="intensity-row">
-        <div class="intensity-label">Hybrid Morph</div>
+      <div class="slider-row">
+        <div class="slider-label">Hybrid Morph</div>
         <BaseSlider
           v-model="fractalStore.params.slider.hybridMorph"
           default-value="1.0"
@@ -89,7 +93,6 @@ const availableFormulas = computed(() => {
       <div class="footer-actions">
         <PaletteSelector />
         <div class="button-row">
-          <button @click="view.resetView" class="button-primary">🔄</button>
           <FractalRandomizer />
           <button @click="fractal.resetParams" class="button-primary">⟲</button>
           <button @click="handleRecordClick" class="button-primary">◯</button>
@@ -172,7 +175,7 @@ const availableFormulas = computed(() => {
   transform: translateX(-2px);
 }
 
-.intensity-row {
+.slider-row {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -182,7 +185,7 @@ const availableFormulas = computed(() => {
   border-radius: 4px;
 }
 
-.intensity-label {
+.slider-label {
   width: 110px;
   font-size: 11px;
   text-transform: uppercase;
