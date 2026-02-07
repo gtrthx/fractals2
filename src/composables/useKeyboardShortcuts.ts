@@ -34,7 +34,7 @@ export function useKeyboardShortcuts() {
     KeyG: () => inputStore.unbindAll(),
     KeyS: () => {
       const canvas = document.querySelector("canvas");
-      const thumb = captureThumbnail(canvas, 0.1).then((thumb) => {
+      captureThumbnail(canvas, 0.1).then((thumb) => {
         console.log(thumb);
         downloadImage(thumb, `fractal_${fractalStore.formulaId}.webp`);
       }); // 10% size
@@ -43,6 +43,7 @@ export function useKeyboardShortcuts() {
     Digit1: () => fractalStore.switchFractalType("escape"),
     Digit2: () => fractalStore.switchFractalType("newton"),
     Digit3: () => fractalStore.switchFractalType("nova"),
+    Digit4: () => fractalStore.switchFractalType("kleinian"),
     ArrowRight: () => fractalStore.nextFormula(),
     ArrowLeft: () => fractalStore.prevFormula(),
     Escape: () => (inputStore.activeAxis = null),

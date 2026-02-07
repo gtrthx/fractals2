@@ -120,4 +120,58 @@ export const BASE_CONTROL_GROUPS: Record<string, ControlGroup[]> = {
       ],
     },
   ],
+  kleinian: [
+    {
+      label: "Group Generator A (q)",
+      colorKey: "seed",
+      sliders: [
+        { paramKey: "seedR" },
+        { paramKey: "seedI", suffix: "i", showPlus: true },
+      ],
+    },
+    {
+      label: "Group Generator B (p)",
+      colorKey: "subtrahend",
+      sliders: [
+        { paramKey: "subtrahend" },
+        { paramKey: "subtrahendI", suffix: "i", showPlus: true },
+      ],
+    },
+    {
+      label: "Inversion Radius (r)",
+      colorKey: "relaxation",
+      sliders: [
+        { paramKey: "relaxation" },
+        { paramKey: "relaxationI", suffix: "i", showPlus: true },
+      ],
+    },
+    {
+      label: "Transformation Warp",
+      colorKey: "power",
+      sliders: [
+        { paramKey: "power" },
+        { paramKey: "powerI", suffix: "i", showPlus: true },
+      ],
+    },
+    {
+      label: "Iterative Drift",
+      colorKey: "memory",
+      sliders: [
+        { paramKey: "memoryR" },
+        { paramKey: "memoryI", suffix: "i", showPlus: true },
+      ],
+    },
+    {
+      label: "Julia / Coord Mix",
+      colorKey: "juliaMorph",
+      sliders: [
+        {
+          paramKey: "juliaMorph",
+          min: 0.0,
+          max: 1.0,
+          step: 0.01,
+        },
+      ],
+    },
+  ],
 };

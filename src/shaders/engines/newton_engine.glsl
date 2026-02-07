@@ -1,65 +1,68 @@
 #include "memory_modes"
 
 vec3 get_newton_color(vec2 uv) {
+  // 1. SETUP
   vec2 coord = uv * zoom + vec2(offsetShiftX, offsetShiftY);
   vec2 seed = vec2(seedR, seedI);
 
   vec2 z = mix(coord, seed, juliaMorph);
-  vec2 p = vec2(power, powerI);
-
+  vec2 powerVec = vec2(power, powerI);
+  vec2 subtrahendVec = vec2(subtrahend, subtrahendI);
+  vec2 relaxationVec = vec2(relaxation, relaxationI);
   vec2 memFactor = vec2(memoryR, memoryI);
+
   vec2 zPrev = z;
-
   float iterations = 0.0;
-  float maxI = maxIterations;
-  float minDiff = 1000.0;
   float tolerance = 0.0001;
+  float minDiff = 1000.0;
 
+  // 2. INITIALIZE COLORING
+  #if defined(COL_ORBIT_TRAP) || defined(COL_GRID) || defined(COL_STALKS)
+  float colorAcc = 1000.0;
+  #else
+  float colorAcc = 0.0;
+  #endif
+
+  // 3. CORE LOOP
   for (float i = 0.0; i < 1000.0; i++) {
-    if (i >= maxI) break;
+    if (i >= maxIterations) break;
 
-    vec2 oldZ = z;
+    vec2 zOld = z;
+    vec2 displacement = fractalStep(z, subtrahendVec, powerVec, zPrev);
 
-    // 1. Calculate the standard Newton Step
-    // We pass 'subtrahend' into the step (e.g., z^p - subtrahend = 0)
-    vec2 step = fractalStep(z, vec2(subtrahend, subtrahendI), p, zPrev);
-
-    // 2. Apply Relaxation + Step + Memory
-    // relaxation.x acts as the complex 'a' multiplier for the Newton step
-    vec2 relaxedStep = complexMul(vec2(relaxation, relaxationI), step);
+    // Newton Update Rule: zNext = z + (relaxation * displacement) + memory
+    vec2 relaxationStep = complexMul(relaxationVec, displacement);
     vec2 inertia = complexMul(z - zPrev, memFactor);
+    vec2 zNext = z + relaxationStep + inertia;
 
-    // In Nova/Newton, adding the seed (c) here creates the "Nova" variety
-    vec2 zNext = z + relaxedStep + inertia;
-
-    // 3. Update history and track convergence
+    // State Update
     float diff = length(zNext - z);
     minDiff = min(minDiff, diff);
-
-    zPrev = getMemoryTransform(oldZ);
-
+    zPrev = getMemoryTransform(zOld);
     z = zNext;
 
+    // Coloring Injection
+    #include "coloring_modes.glsl"
+
+    // Break Condition
     if (diff < tolerance) break;
     iterations++;
   }
 
-  // Background color if it never converged
-  if (iterations >= maxI - 1.0) return vec3(0.02);
+  // 4. FINAL COLORING
+  if (iterations >= maxIterations - 1.0) return vec3(0.02);
 
-  // --- IMPROVED NOVA-STYLE COLORING ---
-  // 1. Smooth the iteration count using the closeness to the root
-  float smoothIter = iterations - log2(log2(minDiff * 10000.0 + 1.1));
-
-  // 2. Determine the "Basin" (which root did we land in?)
   float angle = atan(z.y, z.x) / 6.2831;
+  float colorValue;
 
-  // 3. Combine for the palette index
-  // Dividing smoothIter by a 'colorScale' (e.g. 20.0) spreads the gradient
-  float colorScale = 20.0;
-  float t = smoothIter / colorScale + angle;
+  #ifdef COL_DEFAULT
+  float smoothIter = iterations - log2(log2(minDiff * 10000.0 + 1.1));
+  colorValue = smoothIter / 20.0 + angle;
+  #else
+  colorValue = colorAcc / iterations + angle;
+  #endif
 
-  return get_palette(t);
+  return get_palette(colorValue);
 }
 
 void run_newton_engine() {

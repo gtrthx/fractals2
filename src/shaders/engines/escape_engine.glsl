@@ -1,46 +1,58 @@
 #include "memory_modes"
 
 vec3 get_fractal_color(vec2 uv) {
-  vec2 seed = vec2(seedR, seedI);
+  // 1. SETUP
   vec2 coord = uv * zoom + vec2(offsetShiftX, offsetShiftY);
+  vec2 seed = vec2(seedR, seedI);
 
   vec2 z = mix(seed, coord, juliaMorph);
   vec2 c = mix(coord, seed, juliaMorph);
-  vec2 p = vec2(power, powerI);
+  vec2 powerVec = vec2(power, powerI);
   vec2 memFactor = vec2(memoryR, memoryI);
+
   vec2 zPrev = vec2(0.0);
   float iterations = 0.0;
   float escapeRadius = 100.0;
 
+  // 2. INITIALIZE COLORING
   #if defined(COL_ORBIT_TRAP) || defined(COL_GRID) || defined(COL_STALKS)
   float colorAcc = 1000.0;
   #else
   float colorAcc = 0.0;
   #endif
 
+  // 3. CORE LOOP
   for (float i = 0.0; i < 1000.0; i++) {
     if (i >= maxIterations) break;
 
+    vec2 zOld = z;
     vec2 zNext = fractalStep(z, c, powerVec, zPrev);
+    // c = complexMul(c, getMemoryTransform(memFactor)) + zNext;
 
+    z = zNext;
+    // Apply Memory
     if (i > 0.0) {
-      zNext += complexMul(zPrev, memFactor);
+      zNext += complexMul(getMemoryTransform(zPrev), memFactor);
     }
 
-    zPrev = getMemoryTransform(z);
+    // State Update
+    zPrev = zOld;
     z = zNext;
 
+    // Coloring Injection
     #include "coloring_modes.glsl"
 
+    // Break Condition
     if (length(z) > escapeRadius) break;
     iterations++;
   }
 
+  // 4. FINAL COLORING
   if (iterations >= maxIterations - 1.0) return vec3(0.0);
 
   float smoothIter =
     iterations -
-    log(log(length(z)) / log(escapeRadius)) / log(max(length(p), 1.1));
+    log(log(length(z)) / log(escapeRadius)) / log(max(length(powerVec), 1.1));
   float colorValue;
 
   #if defined(COL_ORBIT_TRAP) || defined(COL_STALKS) || defined(COL_GRID)

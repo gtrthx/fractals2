@@ -22,6 +22,7 @@ uniform float relaxationI;
 uniform float seedR;
 uniform float seedI;
 uniform float juliaMorph;
+// uniform float hybridMorph;
 uniform float memoryR;
 uniform float memoryI;
 

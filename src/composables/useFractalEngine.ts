@@ -9,6 +9,7 @@ import coloringModes from "../shaders/shared/coloring_modes.glsl?raw";
 import escapeEngine from "../shaders/engines/escape_engine.glsl?raw";
 import newtonEngine from "../shaders/engines/newton_engine.glsl?raw";
 import novaEngine from "../shaders/engines/nova_engine.glsl?raw";
+import kleinianEngine from "../shaders/engines/kleinian_engine.glsl?raw";
 
 import { processShader } from "../utils/shaderLoader";
 import { FORMULAS } from "../constants/formulas";
@@ -26,6 +27,7 @@ const shaderLibrary = {
   escape_engine: escapeEngine,
   newton_engine: newtonEngine,
   nova_engine: novaEngine,
+  kleinian_engine: kleinianEngine,
 };
 
 export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
@@ -142,7 +144,7 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
     const loopCount = 1;
     const angle = progress * Math.PI * 2.0 * loopCount;
 
-    // fractalStore.params.slider.powerI = 0.5 + Math.sin(angle) * 0.5;
+    fractalStore.params.slider.powerI = 0.5 + Math.sin(angle) * 0.5;
 
     // fractalStore.params.slider.memoryI = Math.cos(angle) * 0.25;
   };

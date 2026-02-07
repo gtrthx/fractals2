@@ -1,4 +1,4 @@
-export type FractalType = "escape" | "newton" | "nova";
+export type FractalType = "escape" | "newton" | "nova" | "kleinian";
 
 export interface FractalParams {
   maxIterations: number;
@@ -7,6 +7,7 @@ export interface FractalParams {
   seedR: number;
   seedI: number;
   juliaMorph: number;
+  // hybridMorph: number;
   memoryR: number;
   memoryI: number;
   subtrahend: number;
@@ -15,6 +16,8 @@ export interface FractalParams {
   relaxationI: number;
   powerSecondary: number;
   powerSecondaryI: number;
+  kleinianBox: number;
+  kleinianSphere: number;
 }
 
 export type MemoryMode =

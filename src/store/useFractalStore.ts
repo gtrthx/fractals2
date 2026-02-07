@@ -3,7 +3,12 @@ import gsap from "gsap";
 import { FORMULAS } from "../constants/formulas";
 import { DEFAULT_FRACTAL_PARAMS } from "../constants/base-fractal-params";
 import { useViewStore } from "./useViewStore";
-import type { FractalType, FractalParams, MemoryMode } from "../types/fractal";
+import type {
+  FractalType,
+  FractalParams,
+  MemoryMode,
+  ColoringMode,
+} from "../types/fractal";
 import { useInputStore } from "./useInputStore";
 
 export const useFractalStore = defineStore("fractal", {
@@ -11,6 +16,7 @@ export const useFractalStore = defineStore("fractal", {
     currentType: "escape" as FractalType,
     formulaId: "mandelbrot",
     memoryMode: "NONE" as MemoryMode,
+    coloringMode: "DEFAULT" as ColoringMode,
     params: {
       // For resetting sliders
       initial: { ...DEFAULT_FRACTAL_PARAMS } as FractalParams,

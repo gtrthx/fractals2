@@ -7,6 +7,7 @@ export const DEFAULT_FRACTAL_PARAMS: FractalParams = {
   seedR: 0.0,
   seedI: 0.0,
   juliaMorph: 0.0,
+  // hybridMorph: 0.5,
   memoryR: 0.0,
   memoryI: 0.0,
   subtrahend: 1.0,
@@ -15,4 +16,6 @@ export const DEFAULT_FRACTAL_PARAMS: FractalParams = {
   relaxationI: 0.0,
   powerSecondary: 2.0,
   powerSecondaryI: 0.0,
+  kleinianBox: 0.0,
+  kleinianSphere: 0.0,
 };

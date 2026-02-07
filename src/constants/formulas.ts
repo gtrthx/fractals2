@@ -16,6 +16,7 @@ import newtonHybridRaw from "../shaders/formulas/newton/newton_hybrid.frag?raw";
 import novaStdRaw from "../shaders/formulas/nova/nova_std.frag?raw";
 import novaSinRaw from "../shaders/formulas/nova/nova_sin.frag?raw";
 import novaHybridRaw from "../shaders/formulas/nova/nova_hybrid.frag?raw";
+import kleinianRaw from "../shaders/formulas/kleinian/kleinian_basic.frag?raw";
 import type { FormulaDefinition } from "../types/ui";
 
 export const FORMULAS: FormulaDefinition[] = [
@@ -198,6 +199,31 @@ export const FORMULAS: FormulaDefinition[] = [
     zoom: 6.0,
     defaults: {
       power: 2.0,
+    },
+  },
+  {
+    id: "kleinian-basic",
+    name: "Kleinian Limit Set",
+    fractalType: "kleinian", // This tells your engine to use the new include
+    displayString: "z = mobius(fold(z))",
+    shaderSource: kleinianRaw, // Your new kleinian_basic.frag
+    zoom: 2.5,
+    offsetShiftX: 0.0,
+    offsetShiftY: 0.0,
+    defaults: {
+      maxIterations: 100,
+      power: 1.0, // Scale factor for the warp
+      powerI: 0.0,
+      seedR: 1.8, // Generator A Translation
+      seedI: 0.1,
+      subtrahend: 1.5, // Generator B Translation
+      subtrahendI: 0.0,
+      relaxation: 1.0, // Inversion Radius
+      relaxationI: 0.0,
+      juliaMorph: 1.0, // Usually 1.0 for Kleinian to focus on the set
+      // hybridMorph: 0.0,
+      memoryR: 0.0,
+      memoryI: 0.0,
     },
   },
 ];

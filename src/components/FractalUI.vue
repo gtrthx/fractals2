@@ -41,6 +41,7 @@ const availableFormulas = computed(() => {
           <option value="escape">Escape Time</option>
           <option value="newton">Root Finding</option>
           <option value="nova">Nova</option>
+          <option value="kleinian">Kleinian</option>
         </select>
         <button class="close-ui-btn" @click="viewStore.toggleUi()">
           <span class="icon">◀</span>
@@ -73,6 +74,14 @@ const availableFormulas = computed(() => {
         <div class="intensity-label">Intensity</div>
         <BaseSlider v-model="inputStore.intensity" default-value="1.0" />
       </div>
+      <!-- 
+      <div class="intensity-row">
+        <div class="intensity-label">Hybrid Morph</div>
+        <BaseSlider
+          v-model="fractalStore.params.slider.hybridMorph"
+          default-value="1.0"
+        />
+      </div> -->
 
       <MemoryMode />
       <ColoringMode />

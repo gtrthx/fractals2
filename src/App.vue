@@ -67,8 +67,8 @@ canvas {
   // flex-grow: 1;
   height: 100%;
   margin: 0px auto;
-  position: relative;
-  left: 50px;
+  // position: relative;
+  // left: 50px;
 }
 
 hr {

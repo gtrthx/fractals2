@@ -9,6 +9,8 @@ export const UI_COLORS = {
   default: "#646cff",
   relaxation: "#ff00aa",
   subtrahend: "#646cff",
+  // hybridMorph: "#c02a2a",
+  kleinian: "#0067cd",
 } as const;
 
 export type ColorKey = keyof typeof UI_COLORS;
@@ -21,6 +23,7 @@ export const VAR_COLOR_MAP: Record<keyof FractalParams, string> = {
   powerSecondary: UI_COLORS.power,
   powerSecondaryI: UI_COLORS.power,
   juliaMorph: UI_COLORS.juliaMorph,
+  // hybridMorph: UI_COLORS.hybridMorph,
   memoryR: UI_COLORS.memory,
   memoryI: UI_COLORS.memory,
   maxIterations: UI_COLORS.iter,
@@ -28,4 +31,6 @@ export const VAR_COLOR_MAP: Record<keyof FractalParams, string> = {
   relaxationI: UI_COLORS.relaxation,
   subtrahend: UI_COLORS.subtrahend,
   subtrahendI: UI_COLORS.subtrahend,
+  kleinianBox: UI_COLORS.kleinian,
+  kleinianSphere: UI_COLORS.kleinian,
 };

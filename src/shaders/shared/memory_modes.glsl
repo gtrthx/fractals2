@@ -37,3 +37,5 @@ vec2 getMemoryTransform(vec2 val) {
 
   return result;
 }
+
+// complexDiv(val, complexPower(val, vec2(2.0, 0.0)))
