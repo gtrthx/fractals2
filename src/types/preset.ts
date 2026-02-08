@@ -7,6 +7,7 @@ import type {
 import type { Palette, PointerBindings } from "./ui";
 
 export interface Preset {
+  id: string;
   label: string;
   fractalType: FractalType;
   formulaId: string;

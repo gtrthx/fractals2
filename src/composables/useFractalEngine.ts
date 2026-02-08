@@ -224,7 +224,7 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
 
     gl.uniform2f(uniformLocations.resolution, w, h);
     gl.uniform1f(uniformLocations.zoom, view.zoom);
-    gl.uniform1f(uniformLocations.offsetShiftX, view.offset.x + 0.4);
+    gl.uniform1f(uniformLocations.offsetShiftX, view.offset.x);
     gl.uniform1f(uniformLocations.offsetShiftY, view.offset.y);
     gl.uniform1f(
       uniformLocations.maxIterations,
@@ -275,7 +275,6 @@ export function useFractalEngine(canvasRef: Ref<HTMLCanvasElement | null>) {
 
   onMounted(() => {
     init();
-    fractal.setFormula("mandelbrot");
   });
   onUnmounted(() => {
     if (animationFrameId) cancelAnimationFrame(animationFrameId);

@@ -1,12 +1,14 @@
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import { defineStore } from "pinia";
-import { useFractalStore } from "./useFractalStore";
-import { useViewStore } from "./useViewStore";
-import { usePaletteStore } from "./usePaletteStore";
-import { useInputStore } from "./useInputStore";
+import { useRouter } from "vue-router";
 import type { Preset } from "../types/preset";
-import { useMemoryStore } from "./useMemoryStore";
+import { generateId } from "../utils/generateId";
 import { useColoringStore } from "./useColoringStore";
+import { useFractalStore } from "./useFractalStore";
+import { useInputStore } from "./useInputStore";
+import { useMemoryStore } from "./useMemoryStore";
+import { usePaletteStore } from "./usePaletteStore";
+import { useViewStore } from "./useViewStore";
 
 export const usePresetStore = defineStore("presets", () => {
   const fractal = useFractalStore();
@@ -15,30 +17,36 @@ export const usePresetStore = defineStore("presets", () => {
   const input = useInputStore();
   const memory = useMemoryStore();
   const coloring = useColoringStore();
+  const router = useRouter();
 
   const savedPresets = ref<Preset[]>(
     JSON.parse(localStorage.getItem("fractal_presets") || "[]"),
   );
 
-  const currentPresetIndex = ref<number>(-1);
+  const currentPresetId = ref<string | null>(null);
 
-  const currentPresetName = computed(() => {
-    if (currentPresetIndex.value === -1 || savedPresets.value.length === 0) {
-      return "Presets";
-    }
-    return savedPresets.value[currentPresetIndex.value]?.label || "None";
-  });
-
-  watch(
-    savedPresets,
-    (newPresets) => {
-      localStorage.setItem("fractal_presets", JSON.stringify(newPresets));
-    },
-    { deep: true },
+  const currentPreset = computed(() =>
+    savedPresets.value.find((p) => p.id === currentPresetId.value),
   );
 
-  function applyPreset(preset: Preset, index?: number) {
-    if (index !== undefined) currentPresetIndex.value = index;
+  const currentIndex = computed(() =>
+    savedPresets.value.findIndex((p) => p.id === currentPresetId.value),
+  );
+
+  const currentPresetName = computed(
+    () => currentPreset.value?.label || "Presets",
+  );
+
+  function loadPresetById(id: string) {
+    const target = savedPresets.value.find((p) => p.id === id);
+    if (target) {
+      currentPresetId.value = id;
+      applyPreset(target);
+    }
+  }
+
+  function applyPreset(preset: Preset) {
+    currentPresetId.value = preset.id;
 
     fractal.formulaId = preset.formulaId;
     memory.currentMode = preset.memoryMode || "NONE";
@@ -56,29 +64,25 @@ export const usePresetStore = defineStore("presets", () => {
 
   function nextPreset() {
     if (savedPresets.value.length === 0) return;
-    const nextIndex =
-      (currentPresetIndex.value + 1) % savedPresets.value.length;
-    applyPreset(savedPresets.value[nextIndex], nextIndex);
+    const nextIndex = (currentIndex.value + 1) % savedPresets.value.length;
+    const nextPreset = savedPresets.value[nextIndex];
+
+    router.push(`/${nextPreset.formulaId}/${nextPreset.id}`);
   }
 
   function prevPreset() {
-    const length = savedPresets.value.length;
-    if (length === 0) return;
-    let prevIndex = (currentPresetIndex.value - 1 + length) % length;
-
-    if (currentPresetIndex.value <= 0) {
-      prevIndex = length - 1;
-    } else {
-      prevIndex = currentPresetIndex.value - 1;
-    }
-
-    applyPreset(savedPresets.value[prevIndex], prevIndex);
+    const len = savedPresets.value.length;
+    if (len === 0) return;
+    const prevIndex = (currentIndex.value - 1 + len) % len;
+    const prevPreset = savedPresets.value[prevIndex];
+    router.push(`/${prevPreset.formulaId}/${prevPreset.id}`);
   }
 
   function saveCurrentAsPreset(label: string) {
     // TODO
     delete (fractal.params.slider as any)._gsap;
     const newPreset: Preset = {
+      id: generateId(),
       label,
       fractalType: fractal.currentType,
       formulaId: fractal.formulaId,
@@ -93,21 +97,24 @@ export const usePresetStore = defineStore("presets", () => {
     };
 
     savedPresets.value.push(newPreset);
-    currentPresetIndex.value = savedPresets.value.length - 1; // Focus on the new one
   }
 
-  function deletePreset(index: number) {
-    savedPresets.value.splice(index, 1);
-    // Adjust index if we deleted the current or preceding item
-    if (currentPresetIndex.value >= index) {
-      currentPresetIndex.value = Math.max(-1, currentPresetIndex.value - 1);
+  function deletePreset(id: string) {
+    const index = savedPresets.value.findIndex((p) => p.id === id);
+    if (index !== -1) {
+      savedPresets.value.splice(index, 1);
+      if (currentPresetId.value === id) {
+        currentPresetId.value = null;
+        router.push(`/${fractal.formulaId}`);
+      }
     }
   }
 
   return {
     savedPresets,
-    currentPresetIndex,
+    currentPresetId,
     currentPresetName,
+    loadPresetById,
     saveCurrentAsPreset,
     applyPreset,
     deletePreset,

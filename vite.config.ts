@@ -4,7 +4,7 @@ import glsl from "vite-plugin-glsl";
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: "/fractals2/",
+  base: "/",
   plugins: [vue(), glsl()],
   server: {
     port: 3000,

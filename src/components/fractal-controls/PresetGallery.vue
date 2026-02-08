@@ -12,15 +12,15 @@ const isSaving = ref(false);
 const newPresetName = ref("");
 const saveInputRef = ref<HTMLInputElement | null>(null);
 
-const handleSelect = (preset: Preset, index: number) => {
-  presets.applyPreset(preset, index);
+const handleSelect = (preset: Preset) => {
+  presets.applyPreset(preset);
   isDropdownOpen.value = false;
 };
 
-const confirmDelete = (e: Event, index: number) => {
+const confirmDelete = (e: Event, id: string) => {
   e.stopPropagation();
   if (confirm("Delete this preset?")) {
-    presets.deletePreset(index);
+    presets.deletePreset(id);
   }
 };
 
@@ -64,11 +64,11 @@ const cancelSave = () => {
           <Transition name="slide-up">
             <div v-if="isDropdownOpen" class="dropdown-list">
               <div
-                v-for="(preset, index) in presets.savedPresets"
-                :key="index"
+                v-for="preset in presets.savedPresets"
+                :key="preset.id"
                 class="preset-item"
-                :class="{ active: presets.currentPresetIndex === index }"
-                @click="handleSelect(preset, index)"
+                :class="{ active: presets.currentPresetId === preset.id }"
+                @click="handleSelect(preset)"
               >
                 <div class="preset-info">
                   <span class="preset-name">{{ preset.label }}</span>
@@ -76,7 +76,7 @@ const cancelSave = () => {
                 </div>
                 <button
                   class="button-delete"
-                  @click.stop="(e) => confirmDelete(e, index)"
+                  @click.stop="(e) => confirmDelete(e, preset.id)"
                 >
                   ×
                 </button>

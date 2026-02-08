@@ -1,13 +1,14 @@
 import { defineStore } from "pinia";
 import gsap from "gsap";
 import { useInputStore } from "./useInputStore";
+import { FORMULAS } from "../constants/formulas";
 
 export const useViewStore = defineStore("view", {
   state: () => ({
-    zoom: 2,
+    zoom: FORMULAS[0].zoom,
     offset: {
-      x: 0,
-      y: 0,
+      x: FORMULAS[0].offsetShiftX,
+      y: FORMULAS[0].offsetShiftY,
     },
     isUiVisible: true,
   }),

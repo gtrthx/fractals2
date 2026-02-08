@@ -5,6 +5,7 @@ import { DEFAULT_FRACTAL_PARAMS } from "../constants/base-fractal-params";
 import { useViewStore } from "./useViewStore";
 import type { FractalType, FractalParams } from "../types/fractal";
 import { useInputStore } from "./useInputStore";
+import { usePresetStore } from "./usePresetStore";
 
 export const useFractalStore = defineStore("fractal", {
   state: () => ({
@@ -29,11 +30,16 @@ export const useFractalStore = defineStore("fractal", {
 
   actions: {
     setFormula(id: string): void {
+      if (this.formulaId === id) return;
+      this.formulaId = id;
+
+      const preset = usePresetStore();
+      preset.currentPresetId = null;
+
       const formula = FORMULAS.find((f) => f.id === id);
       if (!formula) return;
 
       const view = useViewStore();
-      this.formulaId = id;
       this.currentType = formula.fractalType;
 
       if (formula.zoom !== undefined) view.zoom = formula.zoom;

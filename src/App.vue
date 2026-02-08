@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useFractalEngine } from "./composables/useFractalEngine";
 import { useMouseInteraction } from "./composables/useMouseInteraction";
 import FractalUI from "./components/FractalUI.vue";
 import { useKeyboardShortcuts } from "./composables/useKeyboardShortcuts";
 import { useInputStore } from "./store/useInputStore";
+import { useRoute, useRouter } from "vue-router";
+import { useFractalStore } from "./store/useFractalStore";
+import { usePresetStore } from "./store/usePresetStore";
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 const input = useInputStore();
@@ -13,9 +16,43 @@ const engine = useFractalEngine(canvasRef);
 useKeyboardShortcuts();
 useMouseInteraction(canvasRef);
 const handleRecordRequest = () => {
-  // We call it here, and we can pass the 15-second default
   engine.startRecording(15);
 };
+
+const route = useRoute();
+const router = useRouter();
+const fractal = useFractalStore();
+const preset = usePresetStore();
+
+watch(
+  () => [route.params.formulaId, route.params.presetId],
+  ([formulaId, presetId]) => {
+    if (formulaId && formulaId !== fractal.formulaId) {
+      fractal.setFormula(formulaId as string);
+    }
+
+    if (presetId) {
+      if (presetId !== preset.currentPresetId) {
+        preset.loadPresetById(presetId as string);
+      }
+    } else {
+      preset.currentPresetId = null;
+    }
+  },
+  { immediate: true },
+);
+
+watch(
+  () => [fractal.formulaId, preset.currentPresetId],
+  ([formulaId, presetId]) => {
+    // Construct path: /mandelbrot or /mandelbrot/a1b2c3d4
+    const targetPath = presetId ? `/${formulaId}/${presetId}` : `/${formulaId}`;
+
+    if (route.path !== targetPath) {
+      router.push(targetPath);
+    }
+  },
+);
 </script>
 
 <template>
