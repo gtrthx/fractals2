@@ -1,10 +1,31 @@
 <script setup lang="ts">
+import { computed } from "vue";
+import BaseDropdown from "./ui/BaseDropdown.vue";
+
 import { useFractalEngine } from "../composables/useFractalEngine";
 import { useGraphicsStore, type QualityLevel } from "../store/useGraphicsStore";
 
 const graphics = useGraphicsStore();
 const fractalEngine = useFractalEngine();
 const qualityLevels: QualityLevel[] = ["low", "medium", "high", "ultra"];
+
+const resolutionOptions = computed(() => {
+  return Object.entries(graphics.RESOLUTION_MODES).map(([id, res]) => ({
+    id,
+    label: res.label,
+  }));
+});
+
+const activeLabel = computed(() => {
+  return (
+    graphics.RESOLUTION_MODES[graphics.resolutionPreset]?.label ||
+    "Select Resolution"
+  );
+});
+
+const handleSelect = (option: { id: string }) => {
+  graphics.resolutionPreset = option.id as any;
+};
 </script>
 
 <template>
@@ -25,18 +46,14 @@ const qualityLevels: QualityLevel[] = ["low", "medium", "high", "ultra"];
     </div>
 
     <div class="settings-section">
-      <label class="settings-label">Target Resolution</label>
-      <div class="select-wrapper">
-        <select v-model="graphics.resolutionPreset" class="settings-select">
-          <option
-            v-for="(res, id) in graphics.RESOLUTION_MODES"
-            :key="id"
-            :value="id"
-          >
-            {{ res.label }}
-          </option>
-        </select>
-      </div>
+      <BaseDropdown
+        label="Target Resolution"
+        :model-value="graphics.resolutionPreset"
+        :options="resolutionOptions"
+        identity-key="id"
+        :display-value="activeLabel"
+        @select="handleSelect"
+      />
     </div>
 
     <div class="settings-section advanced-options">
@@ -131,25 +148,6 @@ const qualityLevels: QualityLevel[] = ["low", "medium", "high", "ultra"];
     background: var(--border-medium);
     color: var(--text-primary);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  }
-}
-
-/* Custom Select Dropdowns */
-.settings-select {
-  appearance: none;
-  background: var(--border-subtle);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
-  padding: 10px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  width: 100%;
-  cursor: pointer;
-  outline: none;
-  transition: border-color 0.2s;
-
-  &:focus {
-    border-color: rgba(59, 130, 246, 0.5);
   }
 }
 

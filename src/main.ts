@@ -3,8 +3,8 @@ import "@fontsource/geist-sans/700.css";
 import { createPinia } from "pinia";
 import { createApp } from "vue";
 import App from "./App.vue";
+import "./assets/styles/style.scss";
 import router from "./router";
-import "./style.scss";
 
 const pinia = createPinia();
 

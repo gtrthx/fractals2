@@ -43,8 +43,8 @@ const activePanel = computed(() => {
 
 .main-container {
   flex: 1;
-  position: relative; /* Allows Navigation to overlay the scroll-area */
-  overflow: hidden;
+  position: relative;
+  height: 100%;
 }
 
 .scroll-area {

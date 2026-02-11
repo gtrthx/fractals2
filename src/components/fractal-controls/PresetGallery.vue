@@ -2,34 +2,22 @@
 import { nextTick, ref } from "vue";
 import { useFractalStore } from "../../store/useFractalStore";
 import { usePresetStore } from "../../store/usePresetStore";
-import type { Preset } from "../../types/preset";
+import IconChevron from "../icons/IconChevron.vue";
 import IconSave from "../icons/IconSave.vue";
+import BaseDropdown from "../ui/BaseDropdown.vue";
 
 const presets = usePresetStore();
 const fractal = useFractalStore();
 
-const isDropdownOpen = ref(false);
-const isSaving = ref(false);
-const newPresetName = ref("");
+const dropdown = ref<InstanceType<typeof BaseDropdown> | null>(null);
 const saveInputRef = ref<HTMLInputElement | null>(null);
 
-const handleSelect = (preset: Preset) => {
-  presets.applyPreset(preset);
-  isDropdownOpen.value = false;
-};
-
-const confirmDelete = (e: Event, id: string) => {
-  e.stopPropagation();
-  if (confirm("Delete this preset?")) {
-    presets.deletePreset(id);
-  }
-};
+const isSaving = ref(false);
+const newPresetName = ref("");
 
 const startSaving = async () => {
   isSaving.value = true;
-  isDropdownOpen.value = false;
   newPresetName.value = `Cool ${fractal.formulaId}`;
-
   await nextTick();
   saveInputRef.value?.focus();
   saveInputRef.value?.select();
@@ -45,229 +33,161 @@ const confirmSave = () => {
 const cancelSave = () => {
   isSaving.value = false;
 };
+
+const handleDelete = (id: string) => {
+  if (confirm("Delete this preset?")) {
+    presets.deletePreset(id);
+  }
+};
+
+const handleSelect = (preset: any) => {
+  presets.applyPreset(preset);
+  dropdown.value?.close();
+};
 </script>
 
 <template>
-  <div class="preset-manager">
-    <label class="control-label">Preset</label>
-    <div class="manager-row">
-      <div class="main-area">
-        <div class="dropdown-wrapper" :class="{ 'is-hidden': isSaving }">
-          <div
-            class="select-header"
-            :class="{ open: isDropdownOpen }"
-            @click="isDropdownOpen = !isDropdownOpen"
-          >
-            <span class="placeholder">{{ presets.currentPresetName }}</span>
-            <div class="arrow">▼</div>
-          </div>
+  <div class="control-group">
+    <label class="control-label">Presets</label>
 
-          <Transition name="slide-up">
-            <div v-if="isDropdownOpen" class="dropdown-list">
-              <div
-                v-for="preset in presets.savedPresets"
-                :key="preset.id"
-                class="preset-item"
-                :class="{ active: presets.currentPresetId === preset.id }"
-                @click="handleSelect(preset)"
+    <div class="manager-grid">
+      <div class="main-slot">
+        <BaseDropdown
+          v-if="!isSaving"
+          ref="dropdown"
+          v-model="presets.currentPresetId"
+          :options="presets.savedPresets"
+          identity-key="id"
+          menu-class="upward-menu"
+        >
+          <template #trigger="{ isOpen }">
+            <div class="interactive-surface preset-trigger">
+              <span class="truncate">{{ presets.currentPresetName }}</span>
+              <IconChevron :is-open="isOpen" />
+            </div>
+          </template>
+
+          <template #option="{ option }">
+            <div class="preset-item" @click="handleSelect(option)">
+              <div class="preset-info">
+                <span class="preset-name">{{ option.label }}</span>
+                <span class="preset-meta">{{ option.formulaId }}</span>
+              </div>
+              <button
+                class="button-delete"
+                @click.stop="handleDelete(option.id)"
               >
-                <div class="preset-info">
-                  <span class="preset-name">{{ preset.label }}</span>
-                  <span class="preset-meta">{{ preset.formulaId }}</span>
-                </div>
-                <button
-                  class="button-delete"
-                  @click.stop="(e) => confirmDelete(e, preset.id)"
-                >
-                  ×
-                </button>
-              </div>
+                ×
+              </button>
             </div>
-          </Transition>
-        </div>
+          </template>
+        </BaseDropdown>
 
-        <Transition name="fade">
-          <div>
-            <div v-if="isSaving" class="inline-save-overlay">
-              <input
-                ref="saveInputRef"
-                v-model="newPresetName"
-                @keyup.enter="confirmSave"
-                @keyup.esc="cancelSave"
-                type="text"
-                placeholder="Preset Name..."
-                autocomplete="off"
-              />
-              <div class="actions">
-                <button
-                  class="button-primary button-confirm"
-                  @click="confirmSave"
-                >
-                  ✓
-                </button>
-                <button
-                  class="button-primary button-cancel"
-                  @click="cancelSave"
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-          </div>
-        </Transition>
+        <input
+          v-else
+          ref="saveInputRef"
+          v-model="newPresetName"
+          class="interactive-surface save-input"
+          @keyup.enter="confirmSave"
+          @keyup.esc="cancelSave"
+          type="text"
+          autocomplete="off"
+        />
       </div>
 
-      <button
-        v-if="!isSaving"
-        class="button-primary button-save"
-        @click="startSaving"
-        title="Save Preset"
-      >
-        <IconSave />
-      </button>
+      <div class="action-slot">
+        <button
+          v-if="!isSaving"
+          class="button-primary icon-btn"
+          @click="startSaving"
+          title="Save Preset"
+        >
+          <IconSave />
+        </button>
+
+        <div v-else class="confirm-cancel-group">
+          <button class="button-primary confirm" @click="confirmSave">✓</button>
+          <button class="button-primary cancel" @click="cancelSave">×</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
-<style lang="scss" scoped>
-.preset-manager {
-  width: 100%;
-  color: white;
-}
+<style scoped lang="scss">
+/* Note: box-sizing is now handled by your new global reset! */
 
-.manager-row {
-  display: flex;
+.manager-grid {
+  display: grid;
+  /* Action slot is 32px when button, 52px when two buttons. 
+     Or keep it 1fr + 64px to ensure no jumping */
+  grid-template-columns: 1fr auto;
   gap: 8px;
-  margin-top: 8px;
-  position: relative;
-}
-
-.main-area {
-  flex: 1;
-  position: relative;
-  height: 100%;
-}
-
-.control-label {
-  font-size: 0.75rem;
-  margin-bottom: 8px;
-  color: var(--text-secondary);
-}
-
-/* 1. DROP-DOWN STYLES */
-.dropdown-wrapper {
   width: 100%;
-  height: 32px;
-  transition: opacity 0.2s;
-
-  &.is-hidden {
-    opacity: 0;
-    pointer-events: none;
-  }
 }
 
-.select-header {
-  height: 100%;
-  background: var(--bg-surface);
-  border-radius: 6px;
-  padding: 0 12px;
+.main-slot {
+  min-width: 0;
+}
+
+.preset-trigger {
+  height: 32px;
+  padding: 0 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
-
-  &.open {
-    border-color: var(--accent-color);
-  }
-
-  .placeholder {
-    font-size: 0.85rem;
-    opacity: 0.8;
-  }
-  .arrow {
-    font-size: 0.7rem;
-    opacity: 0.5;
-  }
 }
 
-/* 2. SAVE OVERLAY STYLES (Flicker Proof) */
-.inline-save-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  /* Extends to cover the space of the dropdown AND the save button */
-  width: calc(100%);
-  height: 100%;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  box-sizing: border-box;
-
-  input {
-    flex: 1;
-    background: var(--bg-surface);
-    border: none;
-    color: white;
-    outline: none;
-    font-size: 0.9rem;
-    padding: 0 8px;
-    margin-right: 8px;
-    height: 32px;
-    width: 100%;
-  }
-
-  .actions {
-    display: flex;
-    gap: 8px;
-  }
-}
-
-.button-save,
-.button-confirm {
-  color: var(--color-success);
-  &:hover {
+.save-input {
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  font-size: 0.85rem;
+  outline: none;
+  background: rgba(255, 255, 255, 0.05);
+  &:focus {
     border-color: var(--color-success);
   }
 }
 
-.button-cancel {
-  color: var(--color-danger);
-  &:hover {
-    border-color: var(--color-danger);
+.action-slot {
+  display: flex;
+  align-items: center;
+  height: 32px;
+}
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirm-cancel-group {
+  display: flex;
+  gap: 4px;
+
+  .confirm {
+    color: var(--color-success);
+  }
+  .cancel {
+    color: var(--color-danger);
   }
 }
 
-/* 4. DROPDOWN LIST STYLES */
-.dropdown-list {
-  position: absolute;
-  bottom: 115%;
-  left: 0;
-  right: 0;
-  background: var(--bg-surface);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  max-height: 250px;
-  overflow-y: auto;
-  z-index: 100;
-  box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(10px);
+:deep(.upward-menu) {
+  bottom: calc(100% + 4px);
+  top: auto;
 }
 
 .preset-item {
-  padding: 10px 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid var(--border-subtle);
-  cursor: pointer;
-  &:hover {
-    background: rgba(255, 255, 255, 0.08);
-  }
-  &.active {
-    border-left: 3px solid var(--accent-color);
-    background: rgba(255, 255, 255, 0.03);
-  }
-
+  width: 100%;
+  padding: 8px 12px;
   .preset-info {
     display: flex;
     flex-direction: column;
@@ -275,7 +195,7 @@ const cancelSave = () => {
       font-size: 0.85rem;
     }
     .preset-meta {
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       opacity: 0.4;
       font-family: monospace;
     }
@@ -283,35 +203,11 @@ const cancelSave = () => {
 }
 
 .button-delete {
-  background: none;
-  border: none;
   color: var(--color-danger);
   font-size: 1.2rem;
-  padding: 4px 8px;
-  cursor: pointer;
   opacity: 0.3;
   &:hover {
     opacity: 1;
   }
-}
-
-/* 5. TRANSITIONS */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.15s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.2s ease;
-}
-.slide-up-enter-from,
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(10px);
 }
 </style>

@@ -75,11 +75,11 @@ const isGroupBound = (group: ControlGroup) => {
       </div>
     </header>
 
-    <div class="controls-wrapper">
+    <div class="sliders-wrapper">
       <div
         v-for="group in activeControls"
         :key="group.label"
-        class="control-group"
+        class="slider-group"
         :class="{ 'group-active': isGroupBound(group) }"
       >
         <div
@@ -173,13 +173,13 @@ const isGroupBound = (group: ControlGroup) => {
   gap: 12px;
 }
 
-.controls-wrapper {
+.sliders-wrapper {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.control-group {
+.slider-group {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -189,7 +189,7 @@ const isGroupBound = (group: ControlGroup) => {
   border-radius: 4px;
 }
 
-.control-group.group-active {
+.slider-group.group-active {
   background: var(--border-subtle);
 }
 
