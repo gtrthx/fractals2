@@ -16,6 +16,42 @@ const isDragging = ref(false);
 
 const tweenTarget = { val: props.modelValue };
 
+const isAltPressed = ref(false);
+let velocityRaf = 0;
+let currentMouseX = 0;
+const deadzone = 10;
+
+const velocityLoop = () => {
+  if (!isDragging.value) return;
+
+  // Only apply "Speed" if Alt is held
+  if (isAltPressed.value) {
+    const diff = currentMouseX - startX;
+
+    if (Math.abs(diff) > deadzone) {
+      const direction = diff > 0 ? 1 : -1;
+      // Using a cubic curve for much smoother "fine-tuning" near the center
+      const normalizedDiff = (Math.abs(diff) - deadzone) * 0.001;
+      const speed =
+        Math.pow(normalizedDiff, 2) * direction * (props.step || 1.0);
+
+      let nextVal = tweenTarget.val + speed;
+
+      // Handle Zoom-specific velocity
+      if (props.isZoom && props.baseReference) {
+        const currentMag = props.baseReference / tweenTarget.val;
+        const nextMag = currentMag + speed * currentMag * 0.1;
+        nextVal = props.baseReference / Math.max(nextMag, 1.0);
+      }
+
+      tweenTarget.val = nextVal;
+      emit("update:modelValue", nextVal);
+    }
+  }
+
+  velocityRaf = requestAnimationFrame(velocityLoop);
+};
+
 watch(
   () => props.modelValue,
   (newVal) => {
@@ -61,29 +97,33 @@ const handleReset = (e: MouseEvent) => {
 
 const startDrag = (e: MouseEvent) => {
   isDragging.value = true;
+  isAltPressed.value = e.altKey;
   startX = e.clientX;
+  currentMouseX = e.clientX;
   startValue = props.modelValue;
 
   document.addEventListener("mousemove", onDrag);
   document.addEventListener("mouseup", stopDrag);
   document.body.style.cursor = "ew-resize";
+
+  velocityLoop();
 };
 
 const onDrag = (e: MouseEvent) => {
+  currentMouseX = e.clientX;
+  isAltPressed.value = e.altKey; // Keep the ref updated as the user presses/releases Alt
+
+  // If Alt is held, skip the "Direct Mapping" logic below
+  if (e.altKey) return;
+
+  // --- Standard Position-Based Dragging ---
   const sensitivity = props.step || 0.01;
   const delta = (e.clientX - startX) * sensitivity;
 
   let finalVal;
-
   if (props.isZoom && props.baseReference) {
-    // We use Base 2 for the DRAGGING feel (much smoother)
-    // but the LABEL above will show Base 10.
     const startExp = Math.log2(props.baseReference / startValue);
-    let targetExp = startExp + delta;
-
-    // Clamp at roughly 11-12 to avoid the "32-bit jitter"
-    targetExp = Math.min(targetExp, 12.0);
-
+    let targetExp = Math.min(startExp + delta, 12.0);
     finalVal = props.baseReference / Math.pow(2, targetExp);
   } else {
     let rawVal = startValue + delta;
@@ -108,6 +148,8 @@ const onDrag = (e: MouseEvent) => {
 
 const stopDrag = () => {
   isDragging.value = false;
+  isAltPressed.value = false;
+  cancelAnimationFrame(velocityRaf);
   document.removeEventListener("mousemove", onDrag);
   document.removeEventListener("mouseup", stopDrag);
   document.body.style.cursor = "default";

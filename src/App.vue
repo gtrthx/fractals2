@@ -12,7 +12,7 @@ import { usePresetStore } from "./store/usePresetStore";
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 const input = useInputStore();
 
-const engine = useFractalEngine(canvasRef);
+useFractalEngine(canvasRef);
 useKeyboardShortcuts();
 useMouseInteraction(canvasRef);
 

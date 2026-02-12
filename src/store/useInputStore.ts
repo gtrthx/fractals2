@@ -15,21 +15,38 @@ export const useInputStore = defineStore("interaction", {
     },
     sensitivity: 1.0,
     activeAxis: null as "x" | "y" | null,
+    lockedAxis: null as "x" | "y" | null,
     bindings: {
-      x: ["seedR"],
-      y: ["seedI"],
+      x: ["memoryR"],
+      y: ["memoryI"],
     } as PointerBindings,
     isPaused: false,
   }),
 
   actions: {
-    updateMouse(x: number, y: number) {
+    updateMouse(x: number, y: number, isShiftPressed: boolean) {
       this.mouse.x = x;
       this.mouse.y = y;
 
       if (!this.isPaused) {
-        this.mouse.inputX = x;
-        this.mouse.inputY = y;
+        if (isShiftPressed) {
+          // If we haven't locked an axis yet, decide now based on current position
+          if (!this.lockedAxis) {
+            this.lockedAxis = Math.abs(x) > Math.abs(y) ? "x" : "y";
+          }
+
+          // Only update the axis that was locked in
+          if (this.lockedAxis === "x") {
+            this.mouse.inputX = x;
+          } else {
+            this.mouse.inputY = y;
+          }
+        } else {
+          // Shift is not pressed: Reset the lock and update normally
+          this.lockedAxis = null;
+          this.mouse.inputX = x;
+          this.mouse.inputY = y;
+        }
       }
     },
 
