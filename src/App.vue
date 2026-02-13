@@ -2,12 +2,14 @@
 import { onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import FractalUI from "./components/FractalUI.vue";
+import UiTrigger from "./components/ui/UiTrigger.vue";
 import { useFractalEngine } from "./composables/useFractalEngine";
 import { useKeyboardShortcuts } from "./composables/useKeyboardShortcuts";
 import { useMouseInteraction } from "./composables/useMouseInteraction";
 import { useFractalStore } from "./store/useFractalStore";
 import { useInputStore } from "./store/useInputStore";
 import { usePresetStore } from "./store/usePresetStore";
+import { useUiPanelStore } from "./store/useUiPanelstore";
 import type { FormulaId } from "./types/fractal";
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
@@ -21,6 +23,7 @@ const route = useRoute();
 const router = useRouter();
 const fractal = useFractalStore();
 const preset = usePresetStore();
+const uiPanel = useUiPanelStore();
 
 watch(
   () => [route.params.formulaId, route.params.presetId],
@@ -67,7 +70,7 @@ onMounted(() => {
       'selecting-y': input.activeAxis === 'y',
     }"
   >
-    <FractalUI />
+    <UiTrigger /> <FractalUI v-if="uiPanel.isUiPanelVisible" />
     <canvas ref="canvasRef"></canvas>
   </div>
 </template>
