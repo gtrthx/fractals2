@@ -71,7 +71,6 @@ const handlePalettePick = (index: number) => {
 <style scoped lang="scss">
 .palette-container {
   display: grid;
-  /* Fixed width for the button, flexible for the dropdown */
   grid-template-columns: 1fr 32px;
   align-items: flex-end;
   gap: 8px;
@@ -79,7 +78,7 @@ const handlePalettePick = (index: number) => {
 }
 
 .dropdown-wrapper {
-  min-width: 0; /* Prevents flex/grid items from overflowing */
+  min-width: 0;
   width: 100%;
 }
 

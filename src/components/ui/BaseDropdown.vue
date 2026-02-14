@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onClickOutside } from "@vueuse/core";
-import { ref } from "vue";
+import { computed, ref } from "vue"; // Added computed
 import IconChevron from "../icons/IconChevron.vue";
 
 const props = defineProps<{
@@ -17,10 +17,49 @@ const isOpen = ref(false);
 const isUpward = ref(false);
 const dropdownRef = ref<HTMLElement | null>(null);
 
+// --- CYCLING LOGIC ---
+
+const currentIndex = computed(() => {
+  if (!props.options) return -1;
+  return props.options.findIndex((opt) => isSelected(opt));
+});
+
+const cycle = (direction: number) => {
+  if (!props.options || props.options.length === 0) return;
+
+  const len = props.options.length;
+  const nextIdx = (currentIndex.value + direction + len) % len;
+  const nextOpt = props.options[nextIdx];
+
+  const val = props.identityKey ? nextOpt[props.identityKey] : nextOpt;
+  emit("update:modelValue", val);
+  emit("select", nextOpt);
+};
+
+const handleKeyDown = (e: KeyboardEvent) => {
+  const isUp = e.key === "ArrowUp" || e.key === "ArrowLeft";
+  const isDown = e.key === "ArrowDown" || e.key === "ArrowRight";
+
+  if (isUp || isDown) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    cycle(isUp ? -1 : 1);
+  }
+
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    toggleDropdown();
+  }
+
+  if (e.key === "Escape") {
+    isOpen.value = false;
+  }
+};
+
 const close = () => {
   isOpen.value = false;
 };
-
 const toggle = () => {
   isOpen.value = !isOpen.value;
 };
@@ -42,7 +81,7 @@ const toggleDropdown = async () => {
 const getOptId = (opt: any) =>
   props.identityKey ? opt[props.identityKey] : opt;
 const isSelected = (opt: any) => {
-  const currentId = props.identityKey ? props.modelValue : props.modelValue;
+  const currentId = props.modelValue;
   return getOptId(opt) === currentId;
 };
 
@@ -51,12 +90,16 @@ const select = (opt: any) => {
   emit("update:modelValue", val);
   emit("select", opt);
   isOpen.value = false;
-  close();
 };
 </script>
 
 <template>
-  <div class="control-group" ref="dropdownRef">
+  <div
+    class="control-group"
+    ref="dropdownRef"
+    tabindex="0"
+    @keydown="handleKeyDown"
+  >
     <label v-if="label" class="control-label">{{ label }}</label>
 
     <div class="dropdown-root">
@@ -146,6 +189,14 @@ const select = (opt: any) => {
   &.active {
     color: var(--accent-color);
     background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+.control-group:focus-visible {
+  outline: none;
+  .default-trigger {
+    border-color: var(--accent-color);
+    background: rgba(255, 255, 255, 0.05);
   }
 }
 
