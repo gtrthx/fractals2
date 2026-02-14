@@ -33,7 +33,7 @@ export const usePresetStore = defineStore("presets", () => {
   );
 
   const currentPresetName = computed(
-    () => currentPreset.value?.label || "Presets",
+    () => currentPreset.value?.label || "Preset",
   );
 
   function loadPresetById(id: string) {

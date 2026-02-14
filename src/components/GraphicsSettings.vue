@@ -3,10 +3,12 @@ import { computed } from "vue";
 import BaseDropdown from "./ui/BaseDropdown.vue";
 
 import { useFractalEngine } from "../composables/useFractalEngine";
+import { useFractalStore } from "../store/useFractalStore";
 import { useGraphicsStore } from "../store/useGraphicsStore";
 import type { QualityLevel } from "../types/engine";
 
 const graphics = useGraphicsStore();
+const fractal = useFractalStore();
 const fractalEngine = useFractalEngine();
 const qualityLevels: QualityLevel[] = ["low", "medium", "high", "ultra"];
 
@@ -57,10 +59,44 @@ const handleSelect = (option: { id: string }) => {
       />
     </div>
 
+    <div class="settings-section">
+      <div class="slider-header">
+        <label class="settings-label">Pixel Density</label>
+        <span class="value-display"
+          >{{ graphics.resolutionScale.toFixed(2) }}x</span
+        >
+      </div>
+      <input
+        type="range"
+        min="0.2"
+        max="1.0"
+        step="0.1"
+        v-model.number="graphics.resolutionScale"
+        @input="graphics.markCustom()"
+        class="custom-slider"
+      />
+    </div>
+
+    <div class="settings-section">
+      <div class="slider-header">
+        <label class="settings-label">Max Iterations</label>
+        <span class="value-display">{{ fractal.maxIterations }}</span>
+      </div>
+      <input
+        type="range"
+        min="20"
+        max="500"
+        step="10"
+        v-model.number="fractal.maxIterations"
+        @input="graphics.markCustom()"
+        class="custom-slider"
+      />
+    </div>
+
     <div class="settings-section advanced-options">
       <div class="toggle-row">
         <div class="toggle-info">
-          <h4 class="option-title">Supersampling (SSAA)</h4>
+          <h4 class="option-title">Supersampling</h4>
           <p class="option-desc">
             Renders at 4x internal resolution for edge smoothing.
           </p>
@@ -74,16 +110,22 @@ const handleSelect = (option: { id: string }) => {
         </div>
       </div>
 
-      <div class="toggle-row">
-        <div class="toggle-info">
-          <h4 class="option-title">Framerate Cap</h4>
-          <p class="option-desc">Reduces GPU heat during idle exploration.</p>
+      <div class="settings-section">
+        <label class="settings-label">Framerate</label>
+        <div class="quality-tabs">
+          <button
+            v-for="fps in [30, 60]"
+            :key="fps"
+            @click="
+              graphics.fpsCap = fps;
+              graphics.markCustom();
+            "
+            class="quality-tab-btn"
+            :class="{ active: graphics.fpsCap === fps }"
+          >
+            {{ fps }} FPS
+          </button>
         </div>
-        <select v-model="graphics.fpsCap" class="mini-select">
-          <option :value="30">30 FPS</option>
-          <option :value="60">60 FPS</option>
-          <option :value="120">Uncapped</option>
-        </select>
       </div>
     </div>
 
@@ -103,7 +145,7 @@ const handleSelect = (option: { id: string }) => {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  color: white;
+  color: var(--text-primary);
 }
 
 .settings-section {
@@ -113,9 +155,40 @@ const handleSelect = (option: { id: string }) => {
 }
 
 .settings-label {
-  font-size: 10px;
-  opacity: 0.4;
+  font-size: 11px;
+  color: var(--text-primary);
   font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.value-display {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-color, #4facfe);
+}
+
+.custom-slider {
+  width: 100%;
+  accent-color: var(--text-primary);
+  cursor: pointer;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  appearance: none;
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: #ffffff;
+    border-radius: 50%;
+  }
 }
 
 /* Quality Tab Group */
@@ -177,7 +250,7 @@ const handleSelect = (option: { id: string }) => {
   line-height: 1.4;
 }
 
-/* SSAA Toggle Switch */
+/* Toggle Switch */
 .toggle-track {
   width: 42px;
   height: 22px;

@@ -1,18 +1,20 @@
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import type { QualityLevel, ResolutionConfig } from "../types/engine";
+import { useFractalStore } from "./useFractalStore";
 
 export const useGraphicsStore = defineStore("graphics", () => {
   const qualityLevel = ref<QualityLevel>("medium");
   const fpsCap = ref(60);
   const useSSAA = ref(false);
   const resolutionPreset = ref("native");
+  const resolutionScale = ref(1.0);
 
   const QUALITY_PRESETS: Record<Exclude<QualityLevel, "custom">, any> = {
-    low: { useSSAA: false, fpsCap: 30, iterLimit: 250, scale: 0.5 },
-    medium: { useSSAA: false, fpsCap: 60, iterLimit: 800, scale: 1.0 },
-    high: { useSSAA: true, fpsCap: 60, iterLimit: 1500, scale: 1.0 },
-    ultra: { useSSAA: true, fpsCap: 60, iterLimit: 5000, scale: 1.0 },
+    low: { useSSAA: false, fpsCap: 30, iterLimit: 80, scale: 0.6 },
+    medium: { useSSAA: false, fpsCap: 60, iterLimit: 100, scale: 1.0 },
+    high: { useSSAA: false, fpsCap: 60, iterLimit: 150, scale: 1.0 },
+    ultra: { useSSAA: true, fpsCap: 60, iterLimit: 200, scale: 1.0 },
   };
 
   const RESOLUTION_MODES: Record<string, ResolutionConfig> = {
@@ -34,33 +36,30 @@ export const useGraphicsStore = defineStore("graphics", () => {
   };
 
   const isManual = computed(() => resolutionPreset.value !== "native");
-
   const activeResolution = computed(
     () => RESOLUTION_MODES[resolutionPreset.value],
   );
 
-  const internalScale = computed(() => {
-    if (qualityLevel.value === "custom") return 1.0;
-    return QUALITY_PRESETS[qualityLevel.value].scale;
-  });
-
-  const currentIterationLimit = computed(() => {
-    if (qualityLevel.value === "custom") return 10000;
-    return QUALITY_PRESETS[qualityLevel.value].iterLimit;
-  });
-
   function setQuality(level: QualityLevel) {
     qualityLevel.value = level;
     if (level !== "custom") {
-      const p = QUALITY_PRESETS[level];
-      useSSAA.value = p.useSSAA;
-      fpsCap.value = p.fpsCap;
+      const qualityPreset = QUALITY_PRESETS[level];
+      useSSAA.value = qualityPreset.useSSAA;
+      fpsCap.value = qualityPreset.fpsCap;
+      resolutionScale.value = qualityPreset.scale;
+
+      const fractal = useFractalStore();
+      fractal.maxIterations = qualityPreset.iterLimit;
     }
+  }
+
+  function markCustom() {
+    qualityLevel.value = "custom";
   }
 
   function toggleSSAA() {
     useSSAA.value = !useSSAA.value;
-    qualityLevel.value = "custom";
+    markCustom();
   }
 
   return {
@@ -70,10 +69,10 @@ export const useGraphicsStore = defineStore("graphics", () => {
     resolutionPreset,
     RESOLUTION_MODES,
     isManual,
-    currentIterationLimit,
     activeResolution,
-    internalScale,
+    resolutionScale,
     setQuality,
     toggleSSAA,
+    markCustom,
   };
 });

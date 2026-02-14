@@ -97,6 +97,7 @@ export class FractalEngine {
   private programCache: Map<string, WebGLProgram> = new Map();
   private uniformLocations: Record<string, WebGLUniformLocation | null> = {};
   private animationFrameId: number | null = null;
+  private lastRenderTime: number = 0;
 
   public isRecording = false;
 
@@ -214,17 +215,34 @@ export class FractalEngine {
     if (!this.gl || !this.activeProgram) return;
     if (this.isRecording && manualTime === undefined) return;
 
-    if (manualTime === undefined) {
-      state.input.tickSmoothing();
+    // --- FPS PACING LOGIC ---
+    if (manualTime === undefined && !this.isRecording) {
+      const now = performance.now();
+      const fpsInterval = 1000 / state.graphics.fpsCap;
+      const elapsed = now - this.lastRenderTime;
+
+      // If not enough time has passed, skip this frame
+      if (elapsed < fpsInterval) {
+        this.animationFrameId = requestAnimationFrame(() => this.render(state));
+        return;
+      }
+
+      // Update time, avoiding drift
+      this.lastRenderTime = now - (elapsed % fpsInterval);
+      state.input.tickSmoothing(); // Only process input on actual render frames
     }
 
     const time =
       manualTime !== undefined ? manualTime : performance.now() / 1000;
 
+    // --- RESOLUTION SCALE FIX ---
     if (!this.isRecording && !state.graphics.isManual) {
       const dpr = window.devicePixelRatio || 1;
-      const targetW = Math.floor(this.canvas.clientWidth * dpr);
-      const targetH = Math.floor(this.canvas.clientHeight * dpr);
+      const scale = state.graphics.resolutionScale; // Grab scale from state!
+
+      // Calculate target taking Scale into account
+      const targetW = Math.floor(this.canvas.clientWidth * dpr * scale);
+      const targetH = Math.floor(this.canvas.clientHeight * dpr * scale);
 
       if (
         Math.abs(this.canvas.width - targetW) > 2 ||

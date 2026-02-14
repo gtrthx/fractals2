@@ -39,17 +39,22 @@ const activePanel = computed(() => {
   background: rgba(10, 10, 10, 0.85);
   border-bottom-right-radius: 10px;
   backdrop-filter: blur(5px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .main-container {
-  flex: 1;
+  display: flex;
+  flex-direction: column;
   position: relative;
-  height: 100%;
 }
 
 .scroll-area {
-  height: 100%;
+  flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
+
   &::-webkit-scrollbar {
     width: 4px;
   }
@@ -59,7 +64,6 @@ const activePanel = computed(() => {
   }
 }
 
-/* Animations */
 .ui-fade-enter-active,
 .ui-fade-leave-active {
   transition: all 0.4s ease;
@@ -72,14 +76,14 @@ const activePanel = computed(() => {
 
 .fade-slide-enter-active,
 .fade-slide-leave-active {
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
+
 .fade-slide-enter-from {
   opacity: 0;
-  transform: translateX(10px);
 }
+
 .fade-slide-leave-to {
   opacity: 0;
-  transform: translateX(-10px);
 }
 </style>

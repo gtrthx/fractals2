@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useCameraStore } from "../store/useCameraStore";
 import { useFractalStore } from "../store/useFractalStore";
-import { useGraphicsStore } from "../store/useGraphicsStore";
 import { useInputStore } from "../store/useInputStore";
 import BaseSlider from "./fractal-controls/BaseSlider.vue";
 import ColoringMode from "./fractal-controls/ColoringMode.vue";
@@ -15,7 +14,6 @@ import PaletteSelector from "./PaletteSelector.vue";
 const fractal = useFractalStore();
 const view = useCameraStore();
 const input = useInputStore();
-const graphics = useGraphicsStore();
 // const modifier = useModifierStore();
 
 // const zModLabel = computed(() => {
@@ -64,7 +62,6 @@ const graphics = useGraphicsStore();
           :min="10"
           :step="1"
           default-value="100"
-          :max="graphics.currentIterationLimit"
         />
       </div>
       <div class="slider-container"></div>

@@ -45,7 +45,6 @@ export function useFractalEngine(canvasRef?: Ref<HTMLCanvasElement | null>) {
   const syncShader = () => {
     engineInstance.value?.updateActiveShader({
       formulaId: fractal.formulaId,
-      // Updated to match new ModifiedParameter keys and ModifierConfig structure
       modifiers: modifier.modifiers,
       coloringMode: coloring.currentMode,
       useSSAA: graphics.useSSAA,
@@ -54,7 +53,7 @@ export function useFractalEngine(canvasRef?: Ref<HTMLCanvasElement | null>) {
 
   const syncResolution = () => {
     const res = graphics.activeResolution;
-    const scale = graphics.internalScale;
+    const scale = graphics.resolutionScale;
     const dpr = window.devicePixelRatio || 1;
 
     let w: number;
@@ -71,6 +70,8 @@ export function useFractalEngine(canvasRef?: Ref<HTMLCanvasElement | null>) {
     engineInstance.value?.setResolution(w, h);
   };
 
+  // Watch the new variable
+
   watch(
     [
       () => fractal.formulaId,
@@ -85,7 +86,7 @@ export function useFractalEngine(canvasRef?: Ref<HTMLCanvasElement | null>) {
   );
 
   watch(
-    [() => graphics.activeResolution, () => graphics.internalScale],
+    [() => graphics.activeResolution, () => graphics.resolutionScale],
     syncResolution,
   );
 

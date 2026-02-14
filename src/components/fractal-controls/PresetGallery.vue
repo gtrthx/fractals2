@@ -48,8 +48,6 @@ const handleSelect = (preset: any) => {
 
 <template>
   <div class="control-group">
-    <label class="control-label">Presets</label>
-
     <div class="manager-grid">
       <div class="main-slot">
         <BaseDropdown
