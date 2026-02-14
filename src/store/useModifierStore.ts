@@ -8,7 +8,6 @@ import type {
 } from "../types/parameter";
 
 export const useModifierStore = defineStore("modifiers", () => {
-  // The state now just holds the config for the 3 key slots
   const modifiers = ref<Record<ModifiedParameter, ModifierConfig>>({
     z: { modifierId: "NONE", intensity: 0, conditionId: "ALWAYS" },
     c: { modifierId: "NONE", intensity: 0, conditionId: "ALWAYS" },
@@ -48,7 +47,6 @@ export const useModifierStore = defineStore("modifiers", () => {
     const defines: Record<string, boolean> = {};
 
     for (const [slot, config] of Object.entries(modifiers.value)) {
-      // 1. Only bake if it's not NONE
       if (config.modifierId !== "NONE") {
         const prefix = slot === "zPrev" ? "MEM" : slot.toUpperCase() + "MOD";
 

@@ -7,6 +7,8 @@ import { useCameraStore } from "./useCameraStore";
 import { useColoringStore } from "./useColoringStore";
 import { useFractalStore } from "./useFractalStore";
 import { useInputStore } from "./useInputStore";
+import { useLfoStore } from "./useLfoStore";
+import { useModifierStore } from "./useModifierStore";
 import { usePaletteStore } from "./usePaletteStore";
 
 export const usePresetStore = defineStore("presets", () => {
@@ -14,7 +16,8 @@ export const usePresetStore = defineStore("presets", () => {
   const camera = useCameraStore();
   const palette = usePaletteStore();
   const input = useInputStore();
-  // const modifier = useModifierStore();
+  const modifier = useModifierStore();
+  const lfo = useLfoStore();
   const coloring = useColoringStore();
   const router = useRouter();
 
@@ -39,7 +42,6 @@ export const usePresetStore = defineStore("presets", () => {
   function loadPresetById(id: string) {
     const target = savedPresets.value.find((p) => p.id === id);
     if (target) {
-      currentPresetId.value = id;
       applyPreset(target);
     }
   }
@@ -47,13 +49,14 @@ export const usePresetStore = defineStore("presets", () => {
   function applyPreset(preset: Preset) {
     currentPresetId.value = preset.id;
 
-    // Distribute data to the specific stores
     fractal.formulaId = preset.formulaId;
-    // modifier.modifiers = { ...preset.modifiers };
+
+    modifier.modifiers = JSON.parse(JSON.stringify(preset.modifiers));
+    lfo.assignments = JSON.parse(JSON.stringify(preset.lfos));
+
     coloring.currentMode = preset.coloringMode || "DEFAULT";
     fractal.parameters.slider = { ...preset.parameterValues };
 
-    // We do NOT load configMap anymore, as it is deprecated
     fractal.updateAnchorParameters();
 
     camera.zoom = preset.cameraZoom;
@@ -66,7 +69,6 @@ export const usePresetStore = defineStore("presets", () => {
     if (savedPresets.value.length === 0) return;
     const nextIndex = (currentIndex.value + 1) % savedPresets.value.length;
     const nextPreset = savedPresets.value[nextIndex];
-
     router.push(`/${nextPreset.formulaId}/${nextPreset.id}`);
   }
 
@@ -79,7 +81,6 @@ export const usePresetStore = defineStore("presets", () => {
   }
 
   function saveCurrentAsPreset(label: string) {
-    // Clean up GSAP internal properties if they exist
     const cleanValues = { ...fractal.parameters.slider };
     delete (cleanValues as any)._gsap;
 
@@ -89,9 +90,9 @@ export const usePresetStore = defineStore("presets", () => {
       fractalType: fractal.currentType,
       formulaId: fractal.formulaId,
       maxIterations: fractal.maxIterations,
-      // Removed parameterConfigMap
       parameterValues: cleanValues,
-      // modifiers: JSON.parse(JSON.stringify(modifier.modifiers)),
+      modifiers: JSON.parse(JSON.stringify(modifier.modifiers)),
+      lfos: JSON.parse(JSON.stringify(lfo.assignments)),
       coloringMode: coloring.currentMode,
       sensitivity: input.effectiveSensitivity,
       cameraZoom: camera.zoom,

@@ -1,6 +1,12 @@
 import type { ColoringMode, Palette } from "./coloring";
 import type { FormulaId, FractalType } from "./fractal";
-import type { ParameterValues } from "./parameter";
+import type {
+  LFOConfig,
+  ModifiedParameter,
+  ModifierConfig,
+  ParameterUnitId,
+  ParameterValues,
+} from "./parameter";
 
 export interface Preset {
   id: string;
@@ -8,7 +14,8 @@ export interface Preset {
   fractalType: FractalType;
   formulaId: FormulaId; // Which mathematical base is used
   parameterValues: ParameterValues;
-  // modifiers: Record<ModifiedParameter, ModifierConfig>;
+  modifiers: Record<ModifiedParameter, ModifierConfig>;
+  lfos: Partial<Record<ParameterUnitId, LFOConfig[]>>;
 
   // Visual/Environment properties
   coloringMode: ColoringMode;
