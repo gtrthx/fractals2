@@ -188,7 +188,7 @@ const getLfosForUnit = (unitId: ParameterUnitId) => {
 .slide-down-enter-active,
 .slide-down-leave-active {
   transition:
-    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.25s ease,
     opacity 0.25s ease;
 }
 .slide-down-enter-from,

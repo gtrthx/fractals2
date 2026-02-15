@@ -33,6 +33,12 @@ const activeControls = computed<SliderGroup[]>(() => {
   );
 });
 
+const wrapperHeight = computed(() => {
+  const count = activeControls.value.length;
+  if (count === 0) return 0;
+  return count * 36 - 4;
+});
+
 const getSliderProps = (slider: SliderSchema) => ({
   ...DEFAULT_SLIDER_CONSTRAINTS[slider.parameterUnitId],
   ...slider,
@@ -103,7 +109,7 @@ const hasLfos = (group: SliderGroup) => {
       </div>
     </header>
 
-    <div class="sliders-wrapper">
+    <div class="sliders-wrapper" :style="{ height: wrapperHeight + 'px' }">
       <div
         v-for="group in activeControls"
         :key="group.parameterId"
@@ -231,9 +237,12 @@ const hasLfos = (group: SliderGroup) => {
 }
 
 .sliders-wrapper {
+  display: flex;
+  flex-direction: column;
   gap: 4px;
-  display: grid;
-  grid-template-rows: 1fr;
+
+  transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
 }
 
 .slider-group {
@@ -241,9 +250,11 @@ const hasLfos = (group: SliderGroup) => {
   align-items: center;
   gap: 8px;
   padding: 0 4px;
+  height: 32px;
   min-height: 32px;
   transition: background-color 0.2s ease;
   border-radius: 4px;
+  box-sizing: border-box;
 }
 
 .slider-group.group-active {

@@ -147,7 +147,7 @@ const currentFormulaName = computed(() => {
 .chevron-wrapper {
   display: flex;
   align-items: center;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s ease;
   transform: rotate(-90deg);
 
   &.is-flipped {
@@ -163,6 +163,6 @@ const currentFormulaName = computed(() => {
 
 .settings-gear.spinning {
   transform: rotate(90deg);
-  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.5s ease;
 }
 </style>

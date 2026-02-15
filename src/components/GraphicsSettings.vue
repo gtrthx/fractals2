@@ -277,7 +277,7 @@ const handleSelect = (option: { id: string }) => {
   position: absolute;
   top: 3px;
   left: 3px;
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.25s ease;
 }
 
 .mini-select {

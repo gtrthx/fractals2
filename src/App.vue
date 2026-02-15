@@ -70,7 +70,12 @@ onMounted(() => {
       'selecting-y': input.activeAxis === 'y',
     }"
   >
-    <UiTrigger /> <FractalUI v-if="uiPanel.isUiPanelVisible" />
+    <UiTrigger />
+
+    <Transition name="panel-slide">
+      <FractalUI v-if="uiPanel.isUiPanelVisible" />
+    </Transition>
+
     <canvas ref="canvasRef"></canvas>
   </div>
 </template>
@@ -118,5 +123,18 @@ hr {
   border: 0;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   margin: 20px 0;
+}
+
+.panel-slide-enter-active,
+.panel-slide-leave-active {
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.panel-slide-enter-from,
+.panel-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 </style>
